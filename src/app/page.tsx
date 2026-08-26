@@ -151,26 +151,21 @@ export default function Home() {
         `}</style>
       </div>
 
-      {/* ═══════════════════════════════════════════════════
-          FEATURES — Eloqwnt grid
-         ═══════════════════════════════════════════════════ */}
-      <section className="bg-[var(--hs-bg)] px-6 md:px-10 lg:px-16 py-20 md:py-28">
+      {/* ═══ FEATURES — Light bg ═══ */}
+      <section className="bg-white px-6 md:px-10 lg:px-16 py-20 md:py-28">
         <div className="max-w-6xl mx-auto">
-          <p className="text-[var(--hs-text-secondary)] text-sm font-light mb-3">
-            What we build
-          </p>
-          <h2 className="font-bold text-white text-3xl sm:text-4xl md:text-5xl leading-[1.1] max-w-lg">
-            Four tools to <span className="text-[var(--hs-text-muted)]">defend</span> against urban heat
+          <p className="text-[#9CA0A6] text-sm font-light mb-3">What we build</p>
+          <h2 className="font-bold text-[#111] text-3xl sm:text-4xl md:text-5xl leading-[1.1] max-w-lg">
+            Four tools to <span className="text-[#9CA0A6]">defend</span> against urban heat
           </h2>
-
-          <div className="mt-14 md:mt-16 grid gap-px bg-[var(--hs-border-subtle)] rounded-2xl overflow-hidden md:grid-cols-2">
+          <div className="mt-14 md:mt-16 grid gap-px bg-[#E5E5EA] rounded-2xl overflow-hidden md:grid-cols-2">
             {FEATURES.map((f) => (
-              <Link key={f.title} href={f.href} className="group bg-[var(--hs-bg)] p-7 md:p-10 transition-all duration-500 hover:bg-[var(--hs-bg-elevated)]">
-                <span className="text-[10px] font-mono text-[var(--hs-text-muted)] mb-4 block">{f.num}</span>
-                <h3 className="text-white text-xl md:text-2xl font-semibold mb-2">{f.title}</h3>
-                <p className="text-[var(--hs-text-secondary)] text-sm font-light leading-relaxed max-w-xs">{f.desc}</p>
-                <div className="mt-5 text-xs text-transparent group-hover:text-[var(--hs-text-muted)] transition-all duration-500 flex items-center gap-1">
-                  Explore <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+              <Link key={f.title} href={f.href} className="group bg-white p-7 md:p-10 transition-all duration-300 hover:bg-[#FAFAFA]">
+                <span className="text-[10px] font-mono text-[#9CA0A6] mb-4 block">{f.num}</span>
+                <h3 className="text-[#111] text-xl md:text-2xl font-semibold mb-2">{f.title}</h3>
+                <p className="text-[#6B6B70] text-sm font-light leading-relaxed max-w-xs">{f.desc}</p>
+                <div className="mt-5 text-xs text-transparent group-hover:text-[#9CA0A6] transition-all duration-300 flex items-center gap-1">
+                  Explore <span className="transition-transform duration-200 group-hover:translate-x-1">→</span>
                 </div>
               </Link>
             ))}
@@ -178,10 +173,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
-          STATS
-         ═══════════════════════════════════════════════════ */}
-      <section className="bg-[var(--hs-bg)] border-t border-[var(--hs-border-subtle)] px-6 md:px-10 lg:px-16 py-16 md:py-20">
+      {/* ═══ STATS — Light bg ═══ */}
+      <section className="bg-[#F5F5F7] px-6 md:px-10 lg:px-16 py-16 md:py-20">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
           {[
             { val: "20m²", label: "Resolution" },
@@ -190,26 +183,114 @@ export default function Home() {
             { val: "24/7", label: "Live Feed" },
           ].map((s) => (
             <div key={s.label} className="text-center md:text-left">
-              <div className="font-mono text-3xl md:text-4xl font-bold text-white">{s.val}</div>
-              <div className="mt-1 text-[10px] text-[var(--hs-text-muted)] uppercase tracking-[0.15em]">{s.label}</div>
+              <div className="font-mono text-3xl md:text-4xl font-bold text-[#111]">{s.val}</div>
+              <div className="mt-1 text-[10px] text-[#9CA0A6] uppercase tracking-[0.15em]">{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════════
-          FOOTER
-         ═══════════════════════════════════════════════════ */}
-      <footer className="bg-[var(--hs-bg)] border-t border-[var(--hs-border-subtle)] px-6 md:px-10 lg:px-16 py-8">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <div className="relative h-5 w-5 overflow-hidden rounded bg-white p-[2px]">
-              <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" />
+      {/* ═══ FAQ — Eloqwnt style ═══ */}
+      <section className="bg-white px-6 md:px-10 lg:px-16 py-20 md:py-28">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:gap-16 lg:gap-24">
+            <div className="md:w-1/3 mb-10 md:mb-0 shrink-0">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#111]" />
+                <span className="text-xs font-semibold tracking-wider uppercase text-[#111]">FAQ</span>
+              </div>
+              <h2 className="font-bold text-[#111] text-3xl sm:text-4xl md:text-5xl leading-[1.1]">Frequently<br />Asked Questions</h2>
             </div>
-            <span className="text-xs font-semibold text-white/50">HeatShield</span>
+            <div className="flex-1">
+              {[
+                { q: "What does HeatShield do?", a: "HeatShield provides real-time urban temperature intelligence using FortyGuard's hyperlocal Temperature API. We deliver heat maps, risk scores, cool route planning, and AI-powered safety guidance for cities worldwide." },
+                { q: "How accurate is the temperature data?", a: "FortyGuard's Temperature API measures at 2m above ground with 20m² resolution — the most granular urban temperature data available. It's NVIDIA-recognized and used by city planners and enterprises globally." },
+                { q: "Is HeatShield free to use?", a: "HeatShield offers a free tier with basic heat maps and risk scores. Pro features like real-time alerts, historical data, and the AI advisor require a subscription. FortyGuard API trial credits are included for hackathon participants." },
+                { q: "Which cities does HeatShield support?", a: "HeatShield works with any location worldwide that FortyGuard's API covers. We currently have optimized data for major cities including Phoenix, Dubai, New Delhi, Cairo, Tokyo, Lagos, San Francisco, Abu Dhabi, Riyadh, and Sydney." },
+                { q: "Can I use HeatShield for city planning?", a: "Absolutely. HeatShield is built for Track 01 — Resilient Cities & Infrastructure. Our heat maps, environmental parameters, and satellite segmentation data are ideal for urban planners, architects, and climate resilience researchers." },
+                { q: "How does the AI Heat Advisor work?", a: "Our AI advisor uses Featherless AI (Qwen2.5-7B) to answer questions about heat safety, provide cooling strategies, and give emergency guidance. It's trained on heat safety best practices and powered by real FortyGuard data." },
+              ].map((faq, i) => {
+                const num = String(i + 1).padStart(2, "0");
+                return (
+                  <details key={i} className="border-b border-[#E5E5EA] group">
+                    <summary className="flex items-center gap-4 sm:gap-6 py-5 sm:py-6 cursor-pointer list-none">
+                      <span className="text-xs font-mono text-[#9CA0A6] w-6 shrink-0">{num}</span>
+                      <span className="flex-1 text-base sm:text-lg font-medium text-[#111]">{faq.q}</span>
+                      <div className="w-9 h-9 rounded-full bg-[#F0F0F2] flex items-center justify-center shrink-0 group-open:rotate-45 transition-transform duration-300">
+                        <svg className="w-4 h-4 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                      </div>
+                    </summary>
+                    <p className="text-sm text-[#6B6B70] font-light leading-relaxed ml-10 sm:ml-12 pr-12 pb-5 sm:pb-6">{faq.a}</p>
+                  </details>
+                );
+              })}
+            </div>
           </div>
-          <p className="text-[11px] text-[var(--hs-text-muted)]">Built for FortyGuard Hackathon&apos;26 · Powered by FortyGuard Temperature API®</p>
-          <p className="text-[11px] text-[var(--hs-text-muted)]/50">© 2026</p>
+        </div>
+      </section>
+
+      {/* ═══ FOOTER — Dark ═══ */}
+      <footer className="bg-[#111] px-6 md:px-10 lg:px-16">
+        <div className="max-w-6xl mx-auto py-12 md:py-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6 lg:gap-10">
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-4">Product:</h4>
+              <ul className="space-y-2.5">
+                {["Dashboard", "Heat Maps", "Risk Scoring", "Cool Routes", "AI Advisor", "API Access"].map((l) => (
+                  <li key={l}><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">{l}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-4">Use Cases:</h4>
+              <ul className="space-y-2.5">
+                {["Urban Planning", "Public Health", "Emergency Services", "Real Estate", "Energy Sector", "Climate Research"].map((l) => (
+                  <li key={l}><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">{l}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-4">Company:</h4>
+              <ul className="space-y-2.5">
+                {["About", "Documentation", "API Pricing", "Hackathon'26", "Privacy Policy", "Terms"].map((l) => (
+                  <li key={l}><Link href="/" className="text-sm text-white/50 hover:text-white transition-colors">{l}</Link></li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-4">Stay updated:</h4>
+              <p className="text-sm text-white/40 mb-4 leading-relaxed">Get the latest heat intelligence insights and product updates.</p>
+              <div className="flex border-b border-white/20 pb-2">
+                <input type="email" placeholder="Your email here" className="flex-1 bg-transparent text-sm text-white placeholder-white/30 outline-none" />
+                <button className="text-white/60 hover:text-white transition-colors">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                </button>
+              </div>
+              <p className="text-[10px] text-white/25 mt-3 leading-relaxed">By signing up, you agree to our Privacy Policy. We respect your data.</p>
+              <div className="mt-6">
+                <p className="text-xs font-semibold text-white mb-3">Follow us on:</p>
+                <div className="flex gap-2">
+                  {["GH", "X"].map((s) => (
+                    <a key={s} href="#" className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-xs text-white/50 hover:border-white/40 hover:text-white transition-all">{s}</a>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-white/10 py-5">
+          <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="relative h-5 w-5 overflow-hidden rounded bg-white p-[2px]">
+                <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" />
+              </div>
+              <span className="text-xs font-semibold text-white">HeatShield</span>
+            </div>
+            <p className="text-[11px] text-white/30">© 2026 HeatShield. All rights reserved <span className="mx-1">●</span> <Link href="/" className="text-white font-medium hover:underline">Privacy Policy</Link></p>
+            <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#111] hover:bg-white/90 transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+            </button>
+          </div>
         </div>
       </footer>
 
