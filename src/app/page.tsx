@@ -84,7 +84,7 @@ export default function Home() {
                 </div>
               </button>
               <Link href="/dashboard" className="hidden md:inline-flex items-center gap-2 bg-white text-black rounded-full px-5 py-2.5 text-sm font-medium hover:bg-white/90 transition-colors">
-                Let&apos;s Go 🚀
+                Let&apos;s Go
               </Link>
             </div>
           </nav>
@@ -93,7 +93,7 @@ export default function Home() {
           <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
             {/* Subtitle — above heading */}
             <p className="text-white/60 text-sm md:text-base font-light max-w-lg mb-4 sm:mb-5">
-              AI-powered urban heat defense platform. Real-time temperature intelligence for resilient cities.
+              Urban heat defense platform. Real-time temperature intelligence for resilient cities.
             </p>
 
             {/* Big heading */}
@@ -105,7 +105,7 @@ export default function Home() {
             {/* CTA button */}
             <div className="mt-6 sm:mt-8">
               <Link href="/dashboard" className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white rounded-full px-7 py-3 text-sm font-light hover:bg-white/20 hover:border-white/30 transition-all">
-                Launch Dashboard 🚀
+                Launch Dashboard
               </Link>
             </div>
 
@@ -176,10 +176,12 @@ export default function Home() {
       {/* ═══ WHO WE ARE — Eloqwnt split layout ═══ */}
       <section className="bg-[#F5F5F7] px-6 md:px-10 lg:px-16 py-20 md:py-28">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-16 lg:gap-20">
-          {/* Left — Image/Visual */}
+          {/* Left — Video */}
           <div className="w-full md:w-1/2 shrink-0">
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#111]">
-              <Image src="/heatshield-logo.png" alt="HeatShield" fill className="object-contain p-12" />
+              <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
+                <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260419_065931_e3ca7b53-d32e-4ad5-81de-dc9d6fcfda6d.mp4" type="video/mp4" />
+              </video>
               <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/10" />
             </div>
           </div>
