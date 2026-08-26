@@ -8,7 +8,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "HeatShield — AI-Powered Urban Heat Defense",
   description: "See heat. Stop heat. Save cities. Real-time urban temperature intelligence powered by FortyGuard.",
-  icons: { icon: "/heatshield-logo.png" },
+  icons: { icon: "/heatshield-logo.svg" },
   openGraph: {
     title: "HeatShield — AI-Powered Urban Heat Defense",
     description: "Real-time urban heat intelligence. Cool routes, risk scoring, and AI advisory for cities.",
