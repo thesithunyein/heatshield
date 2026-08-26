@@ -4,261 +4,257 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const STATS = [
-  { value: "20m²", label: "Hyperlocal Resolution" },
-  { value: "2m", label: "Above Ground" },
-  { value: "6", label: "API Endpoints" },
-  { value: "Real-time", label: "Live Data Feed" },
+const VIDEO_URL =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260622_204103_f607742e-09da-4cf5-bb06-4e67b0a531de.mp4";
+
+const TICKER_ITEMS = [
+  "20m² HYPERLOCAL RESOLUTION",
+  "LIVE TEMPERATURE INTELLIGENCE",
+  "REAL-TIME HEAT RISK SCORING",
+  "AI-POWERED COOL ROUTES",
+  "FORTYGUARD TEMPERATURE API",
+  "NVIDIA-RECOGNIZED TECHNOLOGY",
 ];
 
 const FEATURES = [
-  {
-    icon: "◼",
-    title: "Live Heat Maps",
-    desc: "Interactive thermal visualization of urban temperatures at 20m² resolution.",
-    href: "/dashboard",
-  },
-  {
-    icon: "◻",
-    title: "Risk Scoring",
-    desc: "AI-driven composite risk scores combining temperature, humidity, UV, and wind.",
-    href: "/dashboard",
-  },
-  {
-    icon: "▸",
-    title: "Cool Route Planner",
-    desc: "Navigate cities avoiding peak heat — find the coolest path between any two points.",
-    href: "/routes",
-  },
-  {
-    icon: "◈",
-    title: "AI Heat Advisor",
-    desc: "Ask questions about heat safety, get real-time recommendations powered by FortyGuard data.",
-    href: "/advisor",
-  },
+  { num: "01", title: "Live Heat Maps", desc: "Interactive thermal visualization at 20m² resolution.", href: "/dashboard" },
+  { num: "02", title: "Risk Scoring", desc: "AI-driven composite risk from temperature, humidity, UV, wind.", href: "/dashboard" },
+  { num: "03", title: "Cool Routes", desc: "Navigate cities avoiding peak heat exposure.", href: "/routes" },
+  { num: "04", title: "AI Advisor", desc: "Real-time heat safety guidance, powered by FortyGuard data.", href: "/advisor" },
 ];
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [heroTemp, setHeroTemp] = useState(0);
-  const targetTemp = 112;
 
   useEffect(() => {
-    const duration = 2000;
-    const start = Date.now();
-    const animate = () => {
-      const elapsed = Date.now() - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setHeroTemp(Math.round(targetTemp * eased));
-      if (progress < 1) requestAnimationFrame(animate);
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const target = 112;
+    const dur = 2200;
+    const t0 = Date.now();
+    const tick = () => {
+      const p = Math.min((Date.now() - t0) / dur, 1);
+      setHeroTemp(Math.round(target * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) requestAnimationFrame(tick);
     };
-    requestAnimationFrame(animate);
+    requestAnimationFrame(tick);
   }, []);
 
   return (
-    <div className="min-h-screen">
-      {/* ── Nav ─────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--hs-border-subtle)] bg-[rgba(9,9,11,0.85)] backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <div className="relative h-8 w-8 overflow-hidden rounded-lg bg-white p-1">
-              <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" priority />
-            </div>
-            <span className="text-lg font-semibold tracking-tight text-white">HeatShield</span>
-          </div>
-          <div className="hidden items-center gap-1 md:flex">
-            <NavLink href="/dashboard">Dashboard</NavLink>
-            <NavLink href="/routes">Cool Routes</NavLink>
-            <NavLink href="/advisor">AI Advisor</NavLink>
-          </div>
-          <Link
-            href="/dashboard"
-            className="rounded-full bg-white px-5 py-2 text-sm font-medium text-black transition-all hover:bg-[#E4E4E7]"
-          >
-            Open Dashboard
-          </Link>
-        </div>
-      </nav>
+    <div className="w-full overflow-hidden">
 
-      {/* ── Hero ────────────────────────────────── */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-16">
-        {/* Subtle white radial glow */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.04)_0%,transparent_70%)]" />
-        </div>
+      {/* ═══════════════════════════════════════════════════
+          HERO — Video bg + Eloqwnt-style centered layout
+         ═══════════════════════════════════════════════════ */}
+      <section className="relative w-full h-screen">
+        {/* Video */}
+        <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
+          <source src={VIDEO_URL} type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-black/50" />
 
-        {/* Badge */}
-        <div className="relative mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--hs-border)] bg-[var(--hs-bg-card)] px-4 py-1.5 text-xs text-[var(--hs-text-secondary)]">
-          <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-white" />
-          FortyGuard Hackathon&apos;26 · Track 01 — Resilient Cities
-        </div>
+        <div className="relative z-10 flex flex-col h-full">
 
-        {/* Headline */}
-        <h1 className="relative mb-4 text-center text-5xl font-bold tracking-tight sm:text-7xl lg:text-8xl">
-          <span className="block text-white">See Heat.</span>
-          <span className="block text-white">Stop Heat.</span>
-          <span className="block text-[var(--hs-text-muted)]">Save Cities.</span>
-        </h1>
-
-        {/* Sub */}
-        <p className="relative mb-10 max-w-xl text-center text-lg text-[var(--hs-text-secondary)]">
-          AI-powered urban heat defense platform. Real-time temperature
-          intelligence, risk scoring, and cool route planning — powered by
-          FortyGuard&apos;s hyperlocal Temperature API.
-        </p>
-
-        {/* Live Temp Display */}
-        <div className="relative mb-12 hs-glass-card flex items-center gap-6 px-8 py-5">
-          <div>
-            <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hs-text-muted)]">
-              Phoenix, AZ — Live
-            </div>
-            <div className="font-mono text-5xl font-bold text-white">
-              {heroTemp}°
-              <span className="text-lg text-[var(--hs-text-muted)]">F</span>
-            </div>
-          </div>
-          <div className="h-16 w-px bg-[var(--hs-border)]" />
-          <div className="space-y-1 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-white" />
-              <span className="text-[var(--hs-text-secondary)]">Risk Level:</span>
-              <span className="font-semibold text-white">EXTREME</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[var(--hs-text-secondary)]" />
-              <span className="text-[var(--hs-text-secondary)]">Heat Index:</span>
-              <span className="font-semibold text-[var(--hs-text-primary)]">118°F</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[var(--hs-text-muted)]" />
-              <span className="text-[var(--hs-text-secondary)]">UV Index:</span>
-              <span className="font-semibold text-[var(--hs-text-primary)]">11</span>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA Buttons */}
-        <div className="relative flex flex-col gap-4 sm:flex-row">
-          <Link
-            href="/dashboard"
-            className="rounded-full bg-white px-8 py-3 text-sm font-semibold text-black transition-all hover:bg-[#E4E4E7]"
-          >
-            Launch Dashboard →
-          </Link>
-          <Link
-            href="/advisor"
-            className="rounded-full border border-[var(--hs-border)] bg-[var(--hs-bg-card)] px-8 py-3 text-sm font-semibold text-[var(--hs-text-secondary)] transition-all hover:border-[var(--hs-text-muted)] hover:text-white"
-          >
-            Ask AI Advisor
-          </Link>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <svg className="h-5 w-5 text-[var(--hs-text-muted)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </div>
-      </section>
-
-      {/* ── Stats Bar ───────────────────────────── */}
-      <section className="border-y border-[var(--hs-border-subtle)] bg-[var(--hs-bg-elevated)]">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-px md:grid-cols-4">
-          {STATS.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center gap-1 px-6 py-8">
-              <span className="font-mono text-2xl font-bold text-white">
-                {stat.value}
-              </span>
-              <span className="text-xs text-[var(--hs-text-muted)]">{stat.label}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Features ────────────────────────────── */}
-      <section className="mx-auto max-w-6xl px-6 py-24">
-        <div className="mb-16 text-center">
-          <h2 className="mb-3 text-3xl font-bold tracking-tight sm:text-4xl">
-            Built for Climate Resilience
-          </h2>
-          <p className="text-[var(--hs-text-secondary)]">
-            Four powerful tools to see, understand, and defend against urban heat.
-          </p>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2">
-          {FEATURES.map((f, i) => (
-            <Link
-              key={f.title}
-              href={f.href}
-              className={`hs-glass-card group p-8 transition-all duration-300 hover:scale-[1.02] animate-fade-in-up animate-delay-${(i + 1) * 100}`}
-            >
-              <div className="mb-4 text-3xl text-white">{f.icon}</div>
-              <h3 className="mb-2 text-xl font-semibold text-white">
-                {f.title}
-              </h3>
-              <p className="text-sm leading-relaxed text-[var(--hs-text-secondary)]">
-                {f.desc}
-              </p>
-              <div className="mt-4 text-sm font-medium text-[var(--hs-text-muted)] opacity-0 transition-opacity group-hover:opacity-100">
-                Explore →
+          {/* ── Nav — Eloqwnt style ──────────────── */}
+          <nav className="flex items-center justify-between px-6 md:px-10 lg:px-16 py-5 md:py-6 shrink-0">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="relative h-7 w-7 overflow-hidden rounded-md bg-white p-[3px]">
+                <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" priority />
               </div>
+              <span className="text-white font-semibold text-lg tracking-tight">HeatShield</span>
             </Link>
-          ))}
+
+            <div className="hidden md:flex items-center gap-7">
+              <Link href="/dashboard" className="text-white/60 hover:text-white text-sm font-light transition-colors">Dashboard</Link>
+              <Link href="/routes" className="text-white/60 hover:text-white text-sm font-light transition-colors">Cool Routes</Link>
+              <Link href="/advisor" className="text-white/60 hover:text-white text-sm font-light transition-colors">AI Advisor</Link>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <Link href="/dashboard" className="hidden md:inline-block text-white/60 hover:text-white text-sm font-light transition-colors">Go Live</Link>
+              {/* Hamburger icon — Eloqwnt style circle with lines */}
+              <button onClick={() => setMenuOpen(true)} className="md:hidden flex items-center justify-center w-10 h-10 rounded-full border border-white/20" aria-label="Menu">
+                <div className="flex flex-col gap-[4px]">
+                  <span className="block h-[1.5px] w-4 rounded-full bg-white" />
+                  <span className="block h-[1.5px] w-4 rounded-full bg-white" />
+                </div>
+              </button>
+              <Link href="/dashboard" className="hidden md:inline-flex items-center gap-2 bg-white text-black rounded-full px-5 py-2.5 text-sm font-medium hover:bg-white/90 transition-colors">
+                Let&apos;s Go 🚀
+              </Link>
+            </div>
+          </nav>
+
+          {/* ── Hero Content — Eloqwnt centered layout ── */}
+          <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+            {/* Subtitle — above heading */}
+            <p className="text-white/60 text-sm md:text-base font-light max-w-lg mb-4 sm:mb-5">
+              AI-powered urban heat defense platform. Real-time temperature intelligence for resilient cities.
+            </p>
+
+            {/* Big heading */}
+            <h1 className="font-bold text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5rem] leading-[1.08] max-w-4xl tracking-tight">
+              See Heat. Stop Heat.<br />
+              <span className="text-white/40">Save Cities.</span>
+            </h1>
+
+            {/* CTA button */}
+            <div className="mt-6 sm:mt-8">
+              <Link href="/dashboard" className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-white rounded-full px-7 py-3 text-sm font-light hover:bg-white/20 hover:border-white/30 transition-all">
+                Launch Dashboard 🚀
+              </Link>
+            </div>
+
+            {/* Live temp — small inline */}
+            <div className="mt-6 flex items-center gap-3 text-xs text-white/40">
+              <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+              <span>Phoenix, AZ</span>
+              <span className="font-mono text-white/70 font-medium">{heroTemp}°F</span>
+              <span className="text-white/20">|</span>
+              <span>Risk: <span className="text-white/70 font-medium">EXTREME</span></span>
+            </div>
+          </div>
+
+          {/* Scroll arrow — Eloqwnt style black circle */}
+          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                <svg className="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── Tech Stack ──────────────────────────── */}
-      <section className="border-t border-[var(--hs-border-subtle)] bg-[var(--hs-bg-elevated)] px-6 py-24">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2 className="mb-6 text-3xl font-bold tracking-tight">
-            Powered by Real Data
-          </h2>
-          <p className="mb-12 text-[var(--hs-text-secondary)]">
-            Built on FortyGuard&apos;s NVIDIA-recognized Temperature API — the same
-            production infrastructure used by cities and enterprises worldwide.
+      {/* ═══════════════════════════════════════════════════
+          TICKER — Eloqwnt-style scrolling metrics
+         ═══════════════════════════════════════════════════ */}
+      <div className="bg-white border-y border-[var(--hs-border-subtle)] overflow-hidden py-4">
+        <div className="flex whitespace-nowrap animate-[scroll_30s_linear_infinite]">
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+            <span key={i} className="mx-8 text-sm font-semibold tracking-wider text-[#111] uppercase">
+              / {item}
+            </span>
+          ))}
+        </div>
+        <style>{`
+          @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}</style>
+      </div>
+
+      {/* ═══════════════════════════════════════════════════
+          FEATURES — Eloqwnt grid
+         ═══════════════════════════════════════════════════ */}
+      <section className="bg-[var(--hs-bg)] px-6 md:px-10 lg:px-16 py-20 md:py-28">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-[var(--hs-text-secondary)] text-sm font-light mb-3">
+            What we build
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            {["FortyGuard API", "Next.js 15", "TypeScript", "Tailwind CSS", "Vercel"].map((t) => (
-              <span
-                key={t}
-                className="rounded-full border border-[var(--hs-border)] bg-[var(--hs-bg-card)] px-4 py-2 text-xs font-medium text-[var(--hs-text-secondary)]"
-              >
-                {t}
-              </span>
+          <h2 className="font-bold text-white text-3xl sm:text-4xl md:text-5xl leading-[1.1] max-w-lg">
+            Four tools to <span className="text-[var(--hs-text-muted)]">defend</span> against urban heat
+          </h2>
+
+          <div className="mt-14 md:mt-16 grid gap-px bg-[var(--hs-border-subtle)] rounded-2xl overflow-hidden md:grid-cols-2">
+            {FEATURES.map((f) => (
+              <Link key={f.title} href={f.href} className="group bg-[var(--hs-bg)] p-7 md:p-10 transition-all duration-500 hover:bg-[var(--hs-bg-elevated)]">
+                <span className="text-[10px] font-mono text-[var(--hs-text-muted)] mb-4 block">{f.num}</span>
+                <h3 className="text-white text-xl md:text-2xl font-semibold mb-2">{f.title}</h3>
+                <p className="text-[var(--hs-text-secondary)] text-sm font-light leading-relaxed max-w-xs">{f.desc}</p>
+                <div className="mt-5 text-xs text-transparent group-hover:text-[var(--hs-text-muted)] transition-all duration-500 flex items-center gap-1">
+                  Explore <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Footer ──────────────────────────────── */}
-      <footer className="border-t border-[var(--hs-border-subtle)] px-6 py-12">
-        <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 text-center">
+      {/* ═══════════════════════════════════════════════════
+          STATS
+         ═══════════════════════════════════════════════════ */}
+      <section className="bg-[var(--hs-bg)] border-t border-[var(--hs-border-subtle)] px-6 md:px-10 lg:px-16 py-16 md:py-20">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
+          {[
+            { val: "20m²", label: "Resolution" },
+            { val: "2m", label: "Above Ground" },
+            { val: "6", label: "API Endpoints" },
+            { val: "24/7", label: "Live Feed" },
+          ].map((s) => (
+            <div key={s.label} className="text-center md:text-left">
+              <div className="font-mono text-3xl md:text-4xl font-bold text-white">{s.val}</div>
+              <div className="mt-1 text-[10px] text-[var(--hs-text-muted)] uppercase tracking-[0.15em]">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════════
+          FOOTER
+         ═══════════════════════════════════════════════════ */}
+      <footer className="bg-[var(--hs-bg)] border-t border-[var(--hs-border-subtle)] px-6 md:px-10 lg:px-16 py-8">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="relative h-6 w-6 overflow-hidden rounded bg-white p-0.5">
+            <div className="relative h-5 w-5 overflow-hidden rounded bg-white p-[2px]">
               <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" />
             </div>
-            <span className="text-sm font-semibold text-white">HeatShield</span>
+            <span className="text-xs font-semibold text-white/50">HeatShield</span>
           </div>
-          <p className="text-xs text-[var(--hs-text-muted)]">
-            Built for FortyGuard Hackathon&apos;26 · Powered by FortyGuard Temperature API
-          </p>
-          <p className="text-xs text-[var(--hs-text-muted)]">
-            © 2026 HeatShield.
-          </p>
+          <p className="text-[11px] text-[var(--hs-text-muted)]">Built for FortyGuard Hackathon&apos;26 · Powered by FortyGuard Temperature API®</p>
+          <p className="text-[11px] text-[var(--hs-text-muted)]/50">© 2026</p>
         </div>
       </footer>
-    </div>
-  );
-}
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-lg px-3 py-2 text-sm text-[var(--hs-text-secondary)] transition-colors hover:bg-[var(--hs-bg-card)] hover:text-white"
-    >
-      {children}
-    </Link>
+      {/* ═══════════════════════════════════════════════════
+          MOBILE MENU
+         ═══════════════════════════════════════════════════ */}
+      <div
+        className={`fixed inset-0 z-50 md:hidden transition-all duration-700 ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+        style={{ transitionTimingFunction: "cubic-bezier(0.76, 0, 0.24, 1)" }}
+      >
+        <div className="absolute inset-0 bg-black/90 backdrop-blur-xl" />
+        <div className={`relative z-10 flex flex-col h-full px-6 py-5 transition-all duration-700 ${menuOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+          style={{ transitionTimingFunction: "cubic-bezier(0.76, 0, 0.24, 1)" }}
+        >
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
+              <div className="relative h-7 w-7 overflow-hidden rounded-md bg-white p-[3px]">
+                <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" />
+              </div>
+              <span className="text-white font-semibold text-lg tracking-tight">HeatShield</span>
+            </Link>
+            <button onClick={() => setMenuOpen(false)} className="flex items-center justify-center w-10 h-10 rounded-full border border-white/20" aria-label="Close">
+              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center w-full max-w-sm">
+              {["Dashboard", "Cool Routes", "AI Advisor", "Live Demo"].map((label, i) => (
+                <Link key={label} href={i < 3 ? ["/dashboard", "/routes", "/advisor"][i] : "/dashboard"} onClick={() => setMenuOpen(false)}
+                  className={`w-full text-center text-4xl sm:text-5xl font-bold text-white border-b border-white/10 py-4 transition-all duration-300 hover:pl-4 ${menuOpen ? `animate-fade-in-up animate-delay-${(i + 1) * 100}` : "opacity-0"}`}
+                >{label}</Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="pb-6">
+            <Link href="/dashboard" onClick={() => setMenuOpen(false)}
+              className={`block w-full text-center bg-white text-black rounded-full py-4 text-sm font-medium ${menuOpen ? "animate-fade-in-up animate-delay-500" : "opacity-0"}`}
+            >Launch HeatShield</Link>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
