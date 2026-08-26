@@ -16,7 +16,7 @@ export default function CitySelector({ selectedCity, onSelect }: Props) {
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const filtered = PRESET_CITIES.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()) || c.country.toLowerCase().includes(search.toLowerCase()));
+  const filtered = PRESET_CITIES.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()) || c.state.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div ref={ref} className="relative">
@@ -24,7 +24,7 @@ export default function CitySelector({ selectedCity, onSelect }: Props) {
         <span className="text-white/30 text-sm">◉</span>
         <div>
           <div className="text-sm font-medium text-white">{selectedCity?.name ?? "Select City"}</div>
-          {selectedCity && <div className="text-[10px] text-white/30">{selectedCity.country} · {selectedCity.latitude.toFixed(2)}°, {selectedCity.longitude.toFixed(2)}°</div>}
+          {selectedCity && <div className="text-[10px] text-white/30">{selectedCity.state} · {selectedCity.latitude.toFixed(2)}°, {selectedCity.longitude.toFixed(2)}°</div>}
         </div>
         <svg className={`ml-auto h-3.5 w-3.5 text-white/30 transition-transform duration-300 ${open ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
       </button>
@@ -37,7 +37,7 @@ export default function CitySelector({ selectedCity, onSelect }: Props) {
             {filtered.map((city) => (
               <button key={city.name} onClick={() => { onSelect(city); setOpen(false); setSearch(""); }} className={`flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-white/[0.03] ${selectedCity?.name === city.name ? "bg-white/[0.03]" : ""}`}>
                 <span className="text-white/20 text-sm">◉</span>
-                <div><div className="text-sm text-white">{city.name}</div><div className="text-[10px] text-white/25">{city.country}</div></div>
+                <div><div className="text-sm text-white">{city.name}</div><div className="text-[10px] text-white/25">{city.state}</div></div>
                 {selectedCity?.name === city.name && <span className="ml-auto text-white/60 text-xs">✓</span>}
               </button>
             ))}

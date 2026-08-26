@@ -100,7 +100,7 @@ export interface StatusResponse {
 
 export interface City {
   name: string;
-  country: string;
+  state: string;
   latitude: number;
   longitude: number;
   timezone: string;
@@ -143,17 +143,17 @@ export interface ChatMessage {
   data?: Record<string, unknown>;
 }
 
-// ── Preset Cities ────────────────────────────────
+// ── Preset US Cities (FortyGuard covers US only) ──
 
 export const PRESET_CITIES: City[] = [
-  { name: "Phoenix", country: "US", latitude: 33.4484, longitude: -112.074, timezone: "America/Phoenix" },
-  { name: "Dubai", country: "AE", latitude: 25.2048, longitude: 55.2708, timezone: "Asia/Dubai" },
-  { name: "New Delhi", country: "IN", latitude: 28.6139, longitude: 77.209, timezone: "Asia/Kolkata" },
-  { name: "Cairo", country: "EG", latitude: 30.0444, longitude: 31.2357, timezone: "Africa/Cairo" },
-  { name: "Tokyo", country: "JP", latitude: 35.6762, longitude: 139.6503, timezone: "Asia/Tokyo" },
-  { name: "Lagos", country: "NG", latitude: 6.5244, longitude: 3.3792, timezone: "Africa/Lagos" },
-  { name: "San Francisco", country: "US", latitude: 37.7749, longitude: -122.4194, timezone: "America/Los_Angeles" },
-  { name: "Abu Dhabi", country: "AE", latitude: 24.4539, longitude: 54.3773, timezone: "Asia/Dubai" },
-  { name: "Riyadh", country: "SA", latitude: 24.7136, longitude: 46.6753, timezone: "Asia/Riyadh" },
-  { name: "Sydney", country: "AU", latitude: -33.8688, longitude: 151.2093, timezone: "Australia/Sydney" },
+  { name: "Phoenix", state: "AZ", latitude: 33.4484, longitude: -112.074, timezone: "America/Phoenix" },
+  { name: "Las Vegas", state: "NV", latitude: 36.1699, longitude: -115.1398, timezone: "America/Los_Angeles" },
+  { name: "Houston", state: "TX", latitude: 29.7604, longitude: -95.3698, timezone: "America/Chicago" },
+  { name: "Miami", state: "FL", latitude: 25.7617, longitude: -80.1918, timezone: "America/New_York" },
+  { name: "Los Angeles", state: "CA", latitude: 34.0522, longitude: -118.2437, timezone: "America/Los_Angeles" },
+  { name: "Dallas", state: "TX", latitude: 32.7767, longitude: -96.797, timezone: "America/Chicago" },
+  { name: "San Antonio", state: "TX", latitude: 29.4241, longitude: -98.4936, timezone: "America/Chicago" },
+  { name: "Sacramento", state: "CA", latitude: 38.5816, longitude: -121.4944, timezone: "America/Los_Angeles" },
+  { name: "Atlanta", state: "GA", latitude: 33.749, longitude: -84.388, timezone: "America/New_York" },
+  { name: "Phoenix East", state: "AZ", latitude: 33.4942, longitude: -111.9261, timezone: "America/Phoenix" },
 ];

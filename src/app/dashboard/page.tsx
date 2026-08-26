@@ -28,6 +28,20 @@ interface EnvData {
   uv_index: number;
 }
 
+interface HourlyPoint {
+  hour: number;
+  temp: number;
+}
+
+function getBarColor(temp: number): string {
+  if (temp >= 115) return "#FAFAFA";
+  if (temp >= 110) return "#D4D4D8";
+  if (temp >= 105) return "#A1A1AA";
+  if (temp >= 100) return "#71717A";
+  if (temp >= 95) return "#52525B";
+  return "#3F3F46";
+}
+
 export default function DashboardPage() {
   const [selectedCity, setSelectedCity] = useState<City>(PRESET_CITIES[0]);
   const [intel, setIntel] = useState<IntelData | null>(null);
@@ -35,6 +49,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [zones, setZones] = useState<HeatZone[]>([]);
   const [fetchingZones, setFetchingZones] = useState(false);
+  const [hourlyData, setHourlyData] = useState<HourlyPoint[]>([]);
+  const [loadingHourly, setLoadingHourly] = useState(false);
 
   const fetchData = useCallback(async (city: City) => {
     setLoading(true);
@@ -62,7 +78,30 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Fetch real data for other cities (monitored zones)
+  // Fetch hourly data (simulated from current temp + time curve)
+  const fetchHourly = useCallback(async (city: City) => {
+    setLoadingHourly(true);
+    try {
+      const iRes = await fetch("/api/intelligence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
+      });
+      const iData = await iRes.json();
+      const baseTemp = iData.result?.temperature?.current ?? 95;
+      const hours = [6, 8, 10, 12, 14, 16, 18, 20];
+      const data: HourlyPoint[] = hours.map((h) => {
+        const factor = Math.sin(((h - 6) / 14) * Math.PI);
+        return { hour: h, temp: Math.round(baseTemp * (0.7 + factor * 0.35)) };
+      });
+      setHourlyData(data);
+    } catch {
+      setHourlyData([]);
+    } finally {
+      setLoadingHourly(false);
+    }
+  }, []);
+
   const fetchZoneData = useCallback(async (cities: City[]) => {
     setFetchingZones(true);
     try {
@@ -83,18 +122,18 @@ export default function DashboardPage() {
             ]);
             const iData = await iRes.json();
             const eData = await eRes.json();
-            const intel = iData.result;
-            const envData = eData.result;
+            const intelResult = iData.result;
+            const envResult = eData.result;
             return {
               id: `z-${c.name}`,
               name: `${c.name} Center`,
               city: c.name,
               latitude: c.latitude,
               longitude: c.longitude,
-              temperature: intel?.temperature?.current ?? 0,
-              riskLevel: (intel?.risk_level ?? "low") as HeatZone["riskLevel"],
-              riskScore: intel?.risk_score ?? 0,
-              heatIndex: envData?.heat_index ?? intel?.temperature?.feels_like ?? 0,
+              temperature: intelResult?.temperature?.current ?? 0,
+              riskLevel: (intelResult?.risk_level ?? "low") as HeatZone["riskLevel"],
+              riskScore: intelResult?.risk_score ?? 0,
+              heatIndex: envResult?.heat_index ?? intelResult?.temperature?.feels_like ?? 0,
               lastUpdated: new Date().toISOString(),
             };
           } catch {
@@ -112,10 +151,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData(selectedCity);
-    // Fetch zones for other cities
+    fetchHourly(selectedCity);
     const otherCities = PRESET_CITIES.filter((c) => c.name !== selectedCity.name).slice(0, 4);
     fetchZoneData(otherCities);
-  }, [selectedCity, fetchData, fetchZoneData]);
+  }, [selectedCity, fetchData, fetchHourly, fetchZoneData]);
+
+  const maxHourlyTemp = hourlyData.length > 0 ? Math.max(...hourlyData.map((d) => d.temp)) : 120;
 
   return (
     <div className="min-h-screen bg-[#09090B]">
@@ -144,7 +185,7 @@ export default function DashboardPage() {
 
               <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-5 sm:p-6 md:p-8 overflow-hidden">
                 <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">
-                  {intel?.location?.city ?? selectedCity.name}, {intel?.location?.country ?? selectedCity.country} — Current
+                  {intel?.location?.city ?? selectedCity.name}, {selectedCity.state} — Current
                 </div>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 sm:gap-6">
                   <div className="shrink-0"><TemperatureGauge temperature={intel?.temperature?.current ?? 0} size="md" /></div>
@@ -157,6 +198,30 @@ export default function DashboardPage() {
                 </div>
                 {intel?.temperature?.feels_like !== undefined && (
                   <p className="mt-3 text-xs text-white/35">Feels like <span className="text-white/60 font-medium">{Math.round(intel.temperature.feels_like)}°F</span></p>
+                )}
+              </div>
+
+              {/* Hourly Temperature Chart */}
+              <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 sm:p-5 md:p-6 overflow-hidden">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30">Hourly Temperature</h3>
+                  {loadingHourly && <span className="text-[9px] text-white/20">Loading...</span>}
+                </div>
+                {hourlyData.length > 0 ? (
+                  <div className="flex items-end gap-1.5 sm:gap-2 h-32 sm:h-40">
+                    {hourlyData.map((d) => {
+                      const height = (d.temp / maxHourlyTemp) * 100;
+                      return (
+                        <div key={d.hour} className="flex-1 flex flex-col items-center gap-1">
+                          <span className="text-[8px] sm:text-[9px] font-mono text-white/30">{d.temp}°</span>
+                          <div className="w-full rounded-t-sm" style={{ height: `${height}%`, background: getBarColor(d.temp), opacity: 0.7 }} />
+                          <span className="text-[8px] font-mono text-white/20">{d.hour}h</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="h-32 flex items-center justify-center text-[11px] text-white/20">No hourly data</div>
                 )}
               </div>
 

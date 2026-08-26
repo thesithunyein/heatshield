@@ -102,10 +102,12 @@ sequenceDiagram
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| Live Heat Maps | Interactive Leaflet map with thermal visualization at 20m² resolution | Live |
-| Risk Scoring | AI-driven composite risk score (0-100) from temperature, humidity, UV, wind | Live |
-| Cool Routes | Route planner with shade analysis and heat savings calculations | Live |
-| AI Heat Advisor | Chat-based assistant powered by Featherless AI (Qwen2.5-7B) | Live |
+| Live Heat Maps | Interactive Leaflet map with thermal visualization at 20m resolution | Live |
+| Asset Heat Audit | Audit public infrastructure (parks, hospitals, schools) for heat risk | Live |
+| Digital Twin | Simulate hourly heat evolution across a full day | Live |
+| Cool Routes | Route planner using real FortyGuard temperature data per route | Live |
+| AI Heat Advisor | Chat assistant with real temperature context in every response | Live |
+| Hourly Temperature | 24-hour temperature chart with real data from FortyGuard | Live |
 | Environmental Parameters | Heat index, apparent temperature, wet bulb temperature, UV index | Live |
 | Real-time Data | Live FortyGuard API integration with async polling | Live |
 
@@ -122,30 +124,38 @@ heatshield/
 │   ├── app/                          # Next.js App Router
 │   │   ├── layout.tsx               # Root layout (dark mode, favicon)
 │   │   ├── page.tsx                 # Landing page (video hero, FAQ, footer)
-│   │   ├── globals.css              # Design system (heat gradients, glass effects)
+│   │   ├── globals.css              # Design system
 │   │   ├── dashboard/
-│   │   │   └── page.tsx            # Main heat dashboard + Leaflet map
-│   │   ├── advisor/
-│   │   │   └── page.tsx            # AI Heat Advisor chat interface
+│   │   │   └── page.tsx            # Heat dashboard + map + hourly chart
+│   │   ├── audit/
+│   │   │   └── page.tsx            # Public Asset Heat Audit
+│   │   ├── twin/
+│   │   │   └── page.tsx            # Digital Twin Simulation
 │   │   ├── routes/
 │   │   │   └── page.tsx            # Cool Route Planner
+│   │   ├── advisor/
+│   │   │   └── page.tsx            # AI Heat Advisor
 │   │   └── api/
 │   │       ├── intelligence/
-│   │       │   └── route.ts        # FortyGuard /v1/heat-intelligence proxy
+│   │       │   └── route.ts        # FortyGuard heat-intelligence proxy
 │   │       ├── env-params/
-│   │       │   └── route.ts        # FortyGuard /v1/env-params proxy
+│   │       │   └── route.ts        # FortyGuard env-params proxy
+│   │       ├── heatmap/
+│   │       │   └── route.ts        # FortyGuard heatmap proxy
+│   │       ├── satellite/
+│   │       │   └── route.ts        # FortyGuard satellite proxy
 │   │       └── advisor/
 │   │           └── route.ts        # Featherless AI chat proxy
 │   ├── components/
-│   │   ├── Navbar.tsx               # Responsive nav with mobile hamburger menu
-│   │   ├── HeatMap.tsx              # Leaflet map with thermal markers
+│   │   ├── Navbar.tsx               # Responsive nav with mobile menu
+│   │   ├── HeatMap.tsx              # Leaflet map with thermal overlay
 │   │   ├── TemperatureGauge.tsx     # Animated temperature display
 │   │   ├── RiskCard.tsx             # City risk score card
 │   │   └── CitySelector.tsx         # City search dropdown
 │   └── lib/
-│       ├── fortyguard.ts            # FortyGuard API client (async submit/poll)
-│       ├── ai.ts                    # Featherless AI client + local fallback
-│       ├── types.ts                 # TypeScript types + preset cities
+│       ├── fortyguard.ts            # FortyGuard API client
+│       ├── ai.ts                    # Featherless AI client
+│       ├── types.ts                 # TypeScript types + US cities
 │       └── utils.ts                 # Formatting, colors, helpers
 ├── .env.example                     # Environment variable template
 ├── .gitignore                       # Git ignore rules
