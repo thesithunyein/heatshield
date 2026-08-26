@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-interface TemperatureGaugeProps {
+interface Props {
   temperature: number;
   unit?: "F" | "C";
   size?: "sm" | "md" | "lg" | "xl";
@@ -10,18 +10,16 @@ interface TemperatureGaugeProps {
   animated?: boolean;
 }
 
-function getHeatIntensity(temp: number): number {
-  // 0 = dim, 1 = full white brightness
+function getIntensity(temp: number): number {
   if (temp >= 120) return 1;
-  if (temp >= 110) return 0.9;
-  if (temp >= 100) return 0.8;
-  if (temp >= 90) return 0.65;
-  if (temp >= 80) return 0.5;
-  if (temp >= 70) return 0.35;
-  return 0.2;
+  if (temp >= 110) return 0.85;
+  if (temp >= 100) return 0.7;
+  if (temp >= 90) return 0.55;
+  if (temp >= 80) return 0.4;
+  return 0.25;
 }
 
-function getHeatLabel(temp: number): string {
+function getLabel(temp: number): string {
   if (temp >= 120) return "EXTREME HEAT";
   if (temp >= 110) return "DANGEROUS";
   if (temp >= 100) return "VERY HOT";
@@ -31,84 +29,32 @@ function getHeatLabel(temp: number): string {
   return "COOL";
 }
 
-function getColor(temp: number): string {
-  const intensity = getHeatIntensity(temp);
-  const lightness = Math.round(40 + intensity * 60); // 40-100 lightness
-  return `hsl(0, 0%, ${lightness}%)`;
-}
-
-export default function TemperatureGauge({
-  temperature,
-  unit = "F",
-  size = "lg",
-  showLabel = true,
-  animated = true,
-}: TemperatureGaugeProps) {
-  const [displayTemp, setDisplayTemp] = useState(animated ? 0 : temperature);
+export default function TemperatureGauge({ temperature, unit = "F", size = "lg", showLabel = true, animated = true }: Props) {
+  const [display, setDisplay] = useState(animated ? 0 : temperature);
 
   useEffect(() => {
-    if (!animated) {
-      setDisplayTemp(temperature);
-      return;
-    }
-    const duration = 1200;
-    const startTime = Date.now();
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setDisplayTemp(Math.round(temperature * eased));
-      if (progress < 1) requestAnimationFrame(animate);
+    if (!animated) { setDisplay(temperature); return; }
+    const dur = 1200; const t0 = Date.now();
+    const tick = () => {
+      const p = Math.min((Date.now() - t0) / dur, 1);
+      setDisplay(Math.round(temperature * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) requestAnimationFrame(tick);
     };
-    requestAnimationFrame(animate);
+    requestAnimationFrame(tick);
   }, [temperature, animated]);
 
-  const color = getColor(temperature);
-  const label = getHeatLabel(temperature);
-  const intensity = getHeatIntensity(temperature);
-
-  const sizeClasses = {
-    sm: "text-2xl",
-    md: "text-4xl",
-    lg: "text-6xl",
-    xl: "text-8xl",
-  };
+  const sizes = { sm: "text-2xl", md: "text-4xl", lg: "text-6xl", xl: "text-8xl" };
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="relative">
-        {/* Glow effect — white for hot, dim for cool */}
-        <div
-          className="absolute inset-0 blur-3xl"
-          style={{
-            background: `rgba(255, 255, 255, ${intensity * 0.15})`,
-          }}
-        />
-        <span
-          className={`relative font-mono font-bold tracking-tighter ${sizeClasses[size]}`}
-          style={{ color }}
-        >
-          {displayTemp}°
-          <span className="text-[0.5em] text-[var(--hs-text-muted)]">{unit}</span>
-        </span>
-      </div>
-
+      <span className={`font-mono font-bold tracking-tighter ${sizes[size]} text-[#111]`}>
+        {display}°<span className="text-[0.45em] text-[#9CA0A6]">{unit}</span>
+      </span>
       {showLabel && (
         <div className="flex items-center gap-2">
-          <span
-            className="inline-block h-px w-8"
-            style={{ background: color }}
-          />
-          <span
-            className="text-xs font-semibold tracking-widest uppercase"
-            style={{ color }}
-          >
-            {label}
-          </span>
-          <span
-            className="inline-block h-px w-8"
-            style={{ background: color }}
-          />
+          <span className="h-px w-6 bg-[#E5E5EA]" />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9CA0A6]">{getLabel(temperature)}</span>
+          <span className="h-px w-6 bg-[#E5E5EA]" />
         </div>
       )}
     </div>
