@@ -7,8 +7,8 @@
 
 const API_BASE = "https://api.fortyguard.com";
 const API_KEY = process.env.FORTYGUARD_API_KEY ?? "";
-const MAX_POLL_ATTEMPTS = 60;
-const POLL_INTERVAL_MS = 2000;
+const MAX_POLL_ATTEMPTS = 30;
+const POLL_INTERVAL_MS = 3000;
 
 // ── Internal helpers ─────────────────────────────
 
@@ -16,6 +16,8 @@ async function submitRequest<T>(
   endpoint: string,
   body: Record<string, unknown>
 ): Promise<{ activity_id: string }> {
+  console.log(`[FortyGuard] Submitting to ${endpoint}`);
+
   const res = await fetch(`${API_BASE}${endpoint}`, {
     method: "POST",
     headers: {
@@ -27,10 +29,13 @@ async function submitRequest<T>(
 
   if (!res.ok) {
     const text = await res.text();
+    console.error(`[FortyGuard] Submit error ${res.status}: ${text}`);
     throw new Error(`FortyGuard API error ${res.status}: ${text}`);
   }
 
-  return res.json();
+  const data = await res.json();
+  console.log(`[FortyGuard] Got activity_id: ${data.activity_id}`);
+  return data;
 }
 
 async function pollStatus<T>(
@@ -42,16 +47,19 @@ async function pollStatus<T>(
     });
 
     if (!res.ok) {
+      console.error(`[FortyGuard] Poll error ${res.status}`);
       throw new Error(`Status poll error ${res.status}`);
     }
 
     const data = await res.json();
 
     if (data.status === "completed") {
+      console.log(`[FortyGuard] Task ${activityId} completed`);
       return data as T;
     }
 
     if (data.status === "failed") {
+      console.error(`[FortyGuard] Task ${activityId} failed: ${data.error}`);
       throw new Error(`Task failed: ${data.error ?? "unknown error"}`);
     }
 
@@ -204,6 +212,7 @@ export function computeRiskScore(data: {
 // ── Mock data for demo / when API key not set ────
 
 export function getMockHeatIntelligence(latitude: number, longitude: number) {
+  console.log("[FortyGuard] Using mock data (no API key)");
   const tempF = 85 + Math.random() * 35;
   const humidity = 20 + Math.random() * 60;
   const uvIndex = 3 + Math.random() * 9;

@@ -42,6 +42,47 @@ function getBarColor(temp: number): string {
   return "#3F3F46";
 }
 
+async function fetchCityData(city: City): Promise<HeatZone | null> {
+  try {
+    const iRes = await fetch("/api/intelligence", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
+    });
+    const iData = await iRes.json();
+    const intel = iData.result;
+
+    if (!intel) return null;
+
+    // Small delay before second call to avoid rate limiting
+    await new Promise((r) => setTimeout(r, 200));
+
+    const eRes = await fetch("/api/env-params", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
+    });
+    const eData = await eRes.json();
+    const envResult = eData.result;
+
+    return {
+      id: `z-${city.name}`,
+      name: `${city.name} Center`,
+      city: city.name,
+      latitude: city.latitude,
+      longitude: city.longitude,
+      temperature: intel.temperature?.current ?? 0,
+      riskLevel: (intel.risk_level ?? "low") as HeatZone["riskLevel"],
+      riskScore: intel.risk_score ?? 0,
+      heatIndex: envResult?.heat_index ?? intel.temperature?.feels_like ?? 0,
+      lastUpdated: new Date().toISOString(),
+    };
+  } catch (e) {
+    console.error(`Failed to fetch data for ${city.name}:`, e);
+    return null;
+  }
+}
+
 export default function DashboardPage() {
   const [selectedCity, setSelectedCity] = useState<City>(PRESET_CITIES[0]);
   const [intel, setIntel] = useState<IntelData | null>(null);
@@ -78,7 +119,6 @@ export default function DashboardPage() {
     }
   }, []);
 
-  // Fetch hourly data (simulated from current temp + time curve)
   const fetchHourly = useCallback(async (city: City) => {
     setLoadingHourly(true);
     try {
@@ -102,51 +142,19 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // Fetch zone data SEQUENTIALLY to avoid rate limiting
   const fetchZoneData = useCallback(async (cities: City[]) => {
     setFetchingZones(true);
-    try {
-      const results = await Promise.all(
-        cities.map(async (c) => {
-          try {
-            const [iRes, eRes] = await Promise.all([
-              fetch("/api/intelligence", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ latitude: c.latitude, longitude: c.longitude }),
-              }),
-              fetch("/api/env-params", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ latitude: c.latitude, longitude: c.longitude }),
-              }),
-            ]);
-            const iData = await iRes.json();
-            const eData = await eRes.json();
-            const intelResult = iData.result;
-            const envResult = eData.result;
-            return {
-              id: `z-${c.name}`,
-              name: `${c.name} Center`,
-              city: c.name,
-              latitude: c.latitude,
-              longitude: c.longitude,
-              temperature: intelResult?.temperature?.current ?? 0,
-              riskLevel: (intelResult?.risk_level ?? "low") as HeatZone["riskLevel"],
-              riskScore: intelResult?.risk_score ?? 0,
-              heatIndex: envResult?.heat_index ?? intelResult?.temperature?.feels_like ?? 0,
-              lastUpdated: new Date().toISOString(),
-            };
-          } catch {
-            return null;
-          }
-        })
-      );
-      setZones(results.filter((z): z is HeatZone => z !== null));
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setFetchingZones(false);
+    setZones([]);
+    const results: HeatZone[] = [];
+    for (const city of cities) {
+      const zone = await fetchCityData(city);
+      if (zone) {
+        results.push(zone);
+        setZones([...results]); // Update state after each city
+      }
     }
+    setFetchingZones(false);
   }, []);
 
   useEffect(() => {
@@ -263,12 +271,17 @@ export default function DashboardPage() {
 
             <div className="space-y-3 sm:space-y-4 overflow-hidden">
               <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30">
-                {fetchingZones ? "Loading zones..." : "Monitored Zones"}
+                {fetchingZones ? `Loading zones... (${zones.length}/4)` : "Monitored Zones"}
               </h3>
               <div className="space-y-2.5 sm:space-y-3">
                 {zones.map((z) => (
                   <RiskCard key={z.id} name={z.name} city={z.city} temperature={z.temperature} riskLevel={z.riskLevel} riskScore={z.riskScore} heatIndex={z.heatIndex} lastUpdated={new Date(z.lastUpdated).toLocaleTimeString()} />
                 ))}
+                {fetchingZones && zones.length < 4 && (
+                  <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 text-center">
+                    <div className="text-[10px] text-white/20">Loading next city...</div>
+                  </div>
+                )}
               </div>
               <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-3.5 sm:p-4 space-y-1.5">
                 <h4 className="text-[9px] sm:text-[10px] uppercase tracking-[0.12em] text-white/30 mb-1.5">Quick Actions</h4>
