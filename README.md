@@ -399,28 +399,9 @@ vercel --prod
 
 ---
 
-## Hackathon'26
+## Built for FortyGuard Hackathon'26
 
 HeatShield was built for **FortyGuard Hackathon 2026**, Track 01: Resilient Cities & Infrastructure.
-
-### Submission Requirements
-
-| Requirement | Status |
-|-------------|--------|
-| Working demo or prototype | Live at heatshield.sithunyein.com |
-| Code repository link | github.com/thesithunyein/heatshield |
-| Short video presentation (2-5 min) | Recorded demo walkthrough |
-| Written project summary, solution, and impact | This README |
-| Documentation of FortyGuard API usage | FortyGuard API Usage section above |
-
-### Judging Criteria
-
-| Criterion | Description | How HeatShield Addresses It |
-|-----------|-------------|----------------------------|
-| Innovation | Novelty and creativity of the solution | 20m² resolution cooling center optimization using real-time temperature data |
-| Technical Quality | Implementation and use of FortyGuard API | Full-stack TypeScript, async polling, 3 FortyGuard endpoints, Leaflet heat maps |
-| Business Viability | Real-world applicability and market potential | Target: Phoenix Emergency Management. 47 deaths prevented per summer |
-| Presentation | Clarity of pitch and documentation quality | Clear problem statement, measurable impact, professional UI |
 
 ---
 
