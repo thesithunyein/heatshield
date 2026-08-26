@@ -180,7 +180,7 @@ export default function Home() {
           <div className="w-full md:w-1/2 shrink-0">
             <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#111]">
               <video autoPlay loop muted playsInline className="absolute inset-0 w-full h-full object-cover">
-                <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260419_065931_e3ca7b53-d32e-4ad5-81de-dc9d6fcfda6d.mp4" type="video/mp4" />
+                <source src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260423_084718_72a17915-4964-4059-afcd-22d59399b72e.mp4" type="video/mp4" />
               </video>
               <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/10" />
             </div>
