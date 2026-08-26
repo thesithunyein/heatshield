@@ -234,27 +234,36 @@ export default function Home() {
         <div className="max-w-6xl mx-auto py-12 md:py-16">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6 lg:gap-10">
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">Product:</h4>
+              <h4 className="text-sm font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2.5">
-                {["Dashboard", "Heat Maps", "Risk Scoring", "Cool Routes", "AI Advisor", "API Access"].map((l) => (
-                  <li key={l}><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">{l}</Link></li>
-                ))}
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Dashboard</Link></li>
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Heat Maps</Link></li>
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Risk Scoring</Link></li>
+                <li><Link href="/routes" className="text-sm text-white/50 hover:text-white transition-colors">Cool Routes</Link></li>
+                <li><Link href="/advisor" className="text-sm text-white/50 hover:text-white transition-colors">AI Advisor</Link></li>
+                <li><a href="https://docs-api.fortyguard.com" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">API Docs</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">Use Cases:</h4>
+              <h4 className="text-sm font-semibold text-white mb-4">Use Cases</h4>
               <ul className="space-y-2.5">
-                {["Urban Planning", "Public Health", "Emergency Services", "Real Estate", "Energy Sector", "Climate Research"].map((l) => (
-                  <li key={l}><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">{l}</Link></li>
-                ))}
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Urban Planning</Link></li>
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Public Health</Link></li>
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Emergency Services</Link></li>
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Real Estate</Link></li>
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Energy Sector</Link></li>
+                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Climate Research</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-sm font-semibold text-white mb-4">Company:</h4>
+              <h4 className="text-sm font-semibold text-white mb-4">Company</h4>
               <ul className="space-y-2.5">
-                {["About", "Documentation", "API Pricing", "Hackathon'26", "Privacy Policy", "Terms"].map((l) => (
-                  <li key={l}><Link href="/" className="text-sm text-white/50 hover:text-white transition-colors">{l}</Link></li>
-                ))}
+                <li><a href="https://github.com/thesithunyein/heatshield" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">GitHub</a></li>
+                <li><a href="https://docs-api.fortyguard.com" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">Documentation</a></li>
+                <li><a href="https://www.fortyguard.com/hackathon26" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">Hackathon&apos;26</a></li>
+                <li><a href="https://www.fortyguard.com/pricing" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">API Pricing</a></li>
+                <li><Link href="/#privacy" className="text-sm text-white/50 hover:text-white transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/#terms" className="text-sm text-white/50 hover:text-white transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
             <div>
@@ -270,9 +279,8 @@ export default function Home() {
               <div className="mt-6">
                 <p className="text-xs font-semibold text-white mb-3">Follow us on:</p>
                 <div className="flex gap-2">
-                  {["GH", "X"].map((s) => (
-                    <a key={s} href="#" className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-xs text-white/50 hover:border-white/40 hover:text-white transition-all">{s}</a>
-                  ))}
+                  <a href="https://github.com/thesithunyein/heatshield" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-xs text-white/50 hover:border-white/40 hover:text-white transition-all">GH</a>
+                  <a href="https://x.com/heatshield" target="_blank" rel="noopener noreferrer" className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-xs text-white/50 hover:border-white/40 hover:text-white transition-all">X</a>
                 </div>
               </div>
             </div>
@@ -286,7 +294,7 @@ export default function Home() {
               </div>
               <span className="text-xs font-semibold text-white">HeatShield</span>
             </div>
-            <p className="text-[11px] text-white/30">© 2026 HeatShield. All rights reserved <span className="mx-1">●</span> <Link href="/" className="text-white font-medium hover:underline">Privacy Policy</Link></p>
+            <p className="text-[11px] text-white/30">© 2026 HeatShield. All rights reserved <span className="mx-1">●</span> <Link href="#privacy" className="text-white font-medium hover:underline">Privacy Policy</Link> <span className="mx-1">●</span> <Link href="#terms" className="text-white font-medium hover:underline">Terms</Link></p>
             <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#111] hover:bg-white/90 transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
             </button>
