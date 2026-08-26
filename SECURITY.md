@@ -16,7 +16,7 @@ If you discover a security vulnerability within HeatShield, please send an email
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.0.x   | ✅ Yes             |
+| 1.0.x   | Yes                |
 
 ## Security Measures
 

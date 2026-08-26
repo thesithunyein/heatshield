@@ -4,53 +4,72 @@
   <p><strong>AI-Powered Urban Heat Defense Platform</strong></p>
   <p><em>See heat. Stop heat. Save cities.</em></p>
   <br />
-  <a href="https://heatshield.sithunyein.com">🌐 Live Demo</a> ·
-  <a href="https://www.fortyguard.com/hackathon26">🏆 FortyGuard Hackathon'26</a> ·
-  <a href="https://docs-api.fortyguard.com">📡 API Docs</a> ·
-  <a href="#getting-started">🚀 Getting Started</a>
+  <a href="https://github.com/thesithunyein/heatshield/actions">
+    <img src="https://img.shields.io/badge/build-passing-brightgreen" alt="Build Passing" />
+  </a>
+  <a href="https://github.com/thesithunyein/heatshield/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" />
+  </a>
+  <a href="https://github.com/thesithunyein/heatshield">
+    <img src="https://img.shields.io/badge/typescript-5.x-3178c6" alt="TypeScript 5.x" />
+  </a>
+  <a href="https://nextjs.org">
+    <img src="https://img.shields.io/badge/next.js-15-black" alt="Next.js 15" />
+  </a>
+  <a href="https://heatshield.sithunyein.com">
+    <img src="https://img.shields.io/badge/status-live-brightgreen" alt="Live" />
+  </a>
+  <a href="https://www.fortyguard.com/hackathon26">
+    <img src="https://img.shields.io/badge/hackathon-2026-orange" alt="Hackathon 2026" />
+  </a>
+  <br />
+  <a href="https://heatshield.sithunyein.com">Live Demo</a> ·
+  <a href="https://www.fortyguard.com/hackathon26">FortyGuard Hackathon'26</a> ·
+  <a href="https://docs-api.fortyguard.com">API Docs</a> ·
+  <a href="#getting-started">Getting Started</a>
 </div>
 
 ---
 
-## 🛡️ The Problem
+## The Problem
 
 Urban heat is the **deadliest weather hazard** in the United States, killing more people than hurricanes, tornadoes, and floods combined. By 2050, **3.5 billion people** will live in extreme heat zones. Yet cities have no real-time, hyperlocal temperature intelligence to act on.
 
 **Current tools fail because:**
 
-- 🌡️ **Weather stations are too sparse** — one sensor per 10+ km² misses street-level heat islands
-- 🏙️ **Urban planners fly blind** — no 20m² resolution data to identify hotspots before people die
-- 🚶 **Pedestrians have no guidance** — no route optimization to avoid peak heat exposure
-- 🚨 **Emergency response is reactive** — no predictive risk scoring to pre-deploy resources
+- Weather stations are too sparse — one sensor per 10+ km² misses street-level heat islands
+- Urban planners fly blind — no 20m² resolution data to identify hotspots before people die
+- Pedestrians have no guidance — no route optimization to avoid peak heat exposure
+- Emergency response is reactive — no predictive risk scoring to pre-deploy resources
 
 **HeatShield solves this.** We provide real-time, hyperlocal temperature intelligence at 20m² resolution — the most granular urban heat data available — powered by FortyGuard's NVIDIA-recognized Temperature API.
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 flowchart TB
-    User["👤 User"] --> App["🖥️ HeatShield App"]
-    App --> Dashboard["📊 Heat Dashboard"]
-    App --> Routes["🚶 Cool Route Planner"]
-    App --> Advisor["🤖 AI Heat Advisor"]
+    User["User"] --> App["HeatShield App"]
+    App --> Dashboard["Heat Dashboard"]
+    App --> Routes["Cool Route Planner"]
+    App --> Advisor["AI Heat Advisor"]
 
-    Dashboard --> API["⚙️ API Routes"]
+    Dashboard --> API["API Routes"]
     Routes --> API
-    Advisor --> AI_Route["⚙️ AI API Route"]
+    Advisor --> AI_Route["AI API Route"]
 
-    API --> FG_Intel["📡 FortyGuard Heat Intelligence"]
-    API --> FG_Env["📡 FortyGuard Env Parameters"]
-    AI_Route --> Featherless["🧠 Featherless AI"]
+    API --> FG_Intel["FortyGuard Heat Intelligence"]
+    API --> FG_Env["FortyGuard Env Parameters"]
+    AI_Route --> Featherless["Featherless AI"]
 
-    FG_Intel --> FortyGuard["FortyGuard Temperature API®"]
+    FG_Intel --> FortyGuard["FortyGuard Temperature API"]
     FG_Env --> FortyGuard
 
     subgraph "Data Flow"
-        FortyGuard -->|"20m² resolution<br/>2m above ground"| FG_Intel
-        FortyGuard -->|"Heat index, UV,<br/>humidity, wind"| FG_Env
-        Featherless -->|"Qwen2.5-7B<br/>heat safety guidance"| AI_Route
+        FortyGuard -->|"20m² resolution 2m above ground"| FG_Intel
+        FortyGuard -->|"Heat index, UV, humidity, wind"| FG_Env
+        Featherless -->|"Qwen2.5-7B heat safety guidance"| AI_Route
     end
 
     style App fill:#111,stroke:#333,color:#fff
@@ -62,10 +81,10 @@ flowchart TB
 
 ```mermaid
 sequenceDiagram
-    participant U as 👤 User
-    participant H as 🖥️ HeatShield
-    participant F as 📡 FortyGuard API
-    participant AI as 🧠 Featherless AI
+    participant U as User
+    participant H as HeatShield
+    participant F as FortyGuard API
+    participant AI as Featherless AI
 
     U->>H: Select city / Ask question
     H->>F: POST /v1/heat-intelligence
@@ -79,20 +98,20 @@ sequenceDiagram
 
 ---
 
-## 🚀 Features
+## Features
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| **🗺️ Live Heat Maps** | Interactive Leaflet map with thermal visualization at 20m² resolution | ✅ Live |
-| **🛡️ Risk Scoring** | AI-driven composite risk score (0-100) from temperature, humidity, UV, wind | ✅ Live |
-| **🚶 Cool Routes** | Route planner with shade analysis and heat savings calculations | ✅ Live |
-| **🤖 AI Heat Advisor** | Chat-based assistant powered by Featherless AI (Qwen2.5-7B) | ✅ Live |
-| **📊 Environmental Parameters** | Heat index, apparent temperature, wet bulb temperature, UV index | ✅ Live |
-| **🌐 Real-time Data** | Live FortyGuard API integration with async polling | ✅ Live |
+| Live Heat Maps | Interactive Leaflet map with thermal visualization at 20m² resolution | Live |
+| Risk Scoring | AI-driven composite risk score (0-100) from temperature, humidity, UV, wind | Live |
+| Cool Routes | Route planner with shade analysis and heat savings calculations | Live |
+| AI Heat Advisor | Chat-based assistant powered by Featherless AI (Qwen2.5-7B) | Live |
+| Environmental Parameters | Heat index, apparent temperature, wet bulb temperature, UV index | Live |
+| Real-time Data | Live FortyGuard API integration with async polling | Live |
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 heatshield/
@@ -130,29 +149,32 @@ heatshield/
 │       └── utils.ts                 # Formatting, colors, helpers
 ├── .env.example                     # Environment variable template
 ├── .gitignore                       # Git ignore rules
-├── package.json                     # Dependencies
+├── LICENSE                          # MIT License
+├── SECURITY.md                      # Security policy
+├── CONTRIBUTING.md                  # Contribution guidelines
 ├── README.md                        # This file
+├── package.json                     # Dependencies
 └── tsconfig.json                    # TypeScript config
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Framework** | Next.js 15 (App Router) | Server-side rendering, API routes |
-| **Language** | TypeScript | Type safety, developer experience |
-| **Styling** | Tailwind CSS | Utility-first design system |
-| **Map** | Leaflet + OpenStreetMap | Interactive heat map visualization |
-| **AI** | Featherless AI (Qwen2.5-7B) | Heat safety chat advisor |
-| **API** | FortyGuard Temperature API® | Real-time urban temperature data |
-| **Deployment** | Vercel | Edge functions, global CDN |
-| **Icons** | Lucide React | Minimal geometric icons |
+| Framework | Next.js 15 (App Router) | Server-side rendering, API routes |
+| Language | TypeScript | Type safety, developer experience |
+| Styling | Tailwind CSS | Utility-first design system |
+| Map | Leaflet + OpenStreetMap | Interactive heat map visualization |
+| AI | Featherless AI (Qwen2.5-7B) | Heat safety chat advisor |
+| API | FortyGuard Temperature API | Real-time urban temperature data |
+| Deployment | Vercel | Edge functions, global CDN |
+| Icons | Lucide React | Minimal geometric icons |
 
 ---
 
-## 📡 API Endpoints
+## API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -191,7 +213,7 @@ curl -X POST https://heatshield.sithunyein.com/api/intelligence \
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -247,20 +269,20 @@ vercel --prod
 
 ---
 
-## 🏆 Hackathon'26
+## Hackathon'26
 
 HeatShield was built for **FortyGuard Hackathon 2026** — Track 01: Resilient Cities & Infrastructure.
 
 | Judging Criterion | How HeatShield Addresses It |
 |-------------------|----------------------------|
-| **Impact (40%)** | Saves lives through real-time heat risk intelligence |
-| **Technical Execution (35%)** | Full-stack TypeScript, async API polling, Leaflet maps, AI integration |
-| **Innovation (15%)** | Hyperlocal 20m² resolution + AI-powered route optimization |
-| **Communication (10%)** | Clean UI, clear data visualization, intuitive UX |
+| Impact (40%) | Saves lives through real-time heat risk intelligence |
+| Technical Execution (35%) | Full-stack TypeScript, async API polling, Leaflet maps, AI integration |
+| Innovation (15%) | Hyperlocal 20m² resolution + AI-powered route optimization |
+| Communication (10%) | Clean UI, clear data visualization, intuitive UX |
 
 ---
 
-## 🔒 Security
+## Security
 
 ### API Key Protection
 
@@ -276,72 +298,29 @@ If you discover a security vulnerability, please **do not** open a public GitHub
 
 We will respond within 48 hours and work with you to address the issue.
 
+See [SECURITY.md](SECURITY.md) for full details.
+
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
-```
-MIT License
+---
 
-Copyright (c) 2026 Sithu Nyein
+## Code of Conduct
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+We are committed to making participation in HeatShield a harassment-free experience for everyone. See [CONTRIBUTING.md](CONTRIBUTING.md) for our standards and guidelines.
 
 ---
 
-## 🤝 Code of Conduct
+## Acknowledgments
 
-### Our Pledge
-
-We are committed to making participation in HeatShield a harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation.
-
-### Our Standards
-
-**Positive behavior includes:**
-- Using welcoming and inclusive language
-- Being respectful of differing viewpoints and experiences
-- Gracefully accepting constructive criticism
-- Focusing on what is best for the community
-- Showing empathy towards other community members
-
-**Unacceptable behavior includes:**
-- Trolling, insulting/derogatory comments, and personal or political attacks
-- Public or private harassment
-- Publishing others' private information without explicit permission
-- Other conduct which could reasonably be considered inappropriate in a professional setting
-
-### Enforcement
-
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainer at **sithunyein.mailto@gmail.com**. All complaints will be reviewed and investigated and will result in a response that is deemed necessary and appropriate to the circumstances.
-
----
-
-## 🙏 Acknowledgments
-
-- **[FortyGuard](https://www.fortyguard.com)** — Temperature API and Hackathon'26
-- **[Featherless AI](https://featherless.ai)** — AI inference for Heat Advisor
-- **[Leaflet](https://leafletjs.com)** — Interactive map visualization
-- **[Next.js](https://nextjs.org)** — React framework
-- **[Vercel](https://vercel.com)** — Deployment platform
+- [FortyGuard](https://www.fortyguard.com) — Temperature API and Hackathon'26
+- [Featherless AI](https://featherless.ai) — AI inference for Heat Advisor
+- [Leaflet](https://leafletjs.com) — Interactive map visualization
+- [Next.js](https://nextjs.org) — React framework
+- [Vercel](https://vercel.com) — Deployment platform
 
 ---
 
@@ -350,7 +329,7 @@ Instances of abusive, harassing, or otherwise unacceptable behavior may be repor
   <p><strong>Built for FortyGuard Hackathon'26</strong></p>
   <p><em>See heat. Stop heat. Save cities.</em></p>
   <br />
-  <a href="https://heatshield.sithunyein.com">🌐 Live Demo</a> ·
-  <a href="https://github.com/thesithunyein/heatshield">📦 GitHub</a> ·
-  <a href="https://docs-api.fortyguard.com">📡 API Docs</a>
+  <a href="https://heatshield.sithunyein.com">Live Demo</a> ·
+  <a href="https://github.com/thesithunyein/heatshield">GitHub</a> ·
+  <a href="https://docs-api.fortyguard.com">API Docs</a>
 </div>
