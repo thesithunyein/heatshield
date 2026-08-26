@@ -1,0 +1,208 @@
+@import "tailwindcss";
+
+:root {
+  /* Eloqwnt-style dark base */
+  --hs-bg: #0A0A0B;
+  --hs-bg-elevated: #111113;
+  --hs-bg-card: #161618;
+  --hs-bg-card-hover: #1C1C1F;
+  --hs-border: #232326;
+  --hs-border-subtle: #1A1A1D;
+  
+  /* Text hierarchy */
+  --hs-text-primary: #F5F5F7;
+  --hs-text-secondary: #8E8E93;
+  --hs-text-muted: #636366;
+  
+  /* Heat gradient spectrum */
+  --hs-heat-cold: #3B82F6;
+  --hs-heat-cool: #06B6D4;
+  --hs-heat-mild: #22C55E;
+  --hs-heat-warm: #EAB308;
+  --hs-heat-hot: #F97316;
+  --hs-heat-extreme: #EF4444;
+  --hs-heat-critical: #DC2626;
+  
+  /* Brand accent */
+  --hs-accent: #F97316;
+  --hs-accent-glow: rgba(249, 115, 22, 0.15);
+  
+  /* Glass */
+  --hs-glass: rgba(22, 22, 24, 0.8);
+  --hs-glass-border: rgba(255, 255, 255, 0.06);
+  
+  /* Shadows */
+  --hs-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --hs-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --hs-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --hs-shadow-glow: 0 0 40px rgba(249, 115, 22, 0.1);
+}
+
+@theme inline {
+  --color-hs-bg: var(--hs-bg);
+  --color-hs-bg-elevated: var(--hs-bg-elevated);
+  --color-hs-bg-card: var(--hs-bg-card);
+  --color-hs-bg-card-hover: var(--hs-bg-card-hover);
+  --color-hs-border: var(--hs-border);
+  --color-hs-border-subtle: var(--hs-border-subtle);
+  --color-hs-text-primary: var(--hs-text-primary);
+  --color-hs-text-secondary: var(--hs-text-secondary);
+  --color-hs-text-muted: var(--hs-text-muted);
+  --color-hs-heat-cold: var(--hs-heat-cold);
+  --color-hs-heat-cool: var(--hs-heat-cool);
+  --color-hs-heat-mild: var(--hs-heat-mild);
+  --color-hs-heat-warm: var(--hs-heat-warm);
+  --color-hs-heat-hot: var(--hs-heat-hot);
+  --color-hs-heat-extreme: var(--hs-heat-extreme);
+  --color-hs-heat-critical: var(--hs-heat-critical);
+  --color-hs-accent: var(--hs-accent);
+  --color-hs-glass: var(--hs-glass);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* ── Base ──────────────────────────────────────── */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--hs-bg);
+  color: var(--hs-text-primary);
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--hs-bg);
+  color: var(--hs-text-primary);
+  font-family: var(--font-sans, system-ui, -apple-system, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.3);
+  color: #fff;
+}
+
+/* ── Scrollbar ─────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ── Heat gradient utilities ───────────────────── */
+
+.hs-gradient-heat {
+  background: linear-gradient(135deg, #3B82F6 0%, #06B6D4 20%, #22C55E 40%, #EAB308 60%, #F97316 80%, #EF4444 100%);
+}
+
+.hs-gradient-heat-text {
+  background: linear-gradient(135deg, #F97316 0%, #EF4444 50%, #DC2626 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hs-gradient-heat-subtle {
+  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(239, 68, 68, 0.04) 100%);
+}
+
+/* ── Glass card ────────────────────────────────── */
+
+.hs-glass-card {
+  background: var(--hs-glass);
+  border: 1px solid var(--hs-glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+}
+
+.hs-glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(22, 22, 24, 0.9);
+}
+
+/* ── Animations ────────────────────────────────── */
+
+@keyframes pulse-heat {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(249, 115, 22, 0.1); }
+  50% { box-shadow: 0 0 40px rgba(249, 115, 22, 0.25); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse-heat {
+  animation: pulse-heat 2s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+}
+
+.animate-delay-100 { animation-delay: 0.1s; }
+.animate-delay-200 { animation-delay: 0.2s; }
+.animate-delay-300 { animation-delay: 0.3s; }
+.animate-delay-400 { animation-delay: 0.4s; }
+.animate-delay-500 { animation-delay: 0.5s; }
+
+/* ── Risk level colors ─────────────────────────── */
+
+.risk-low { border-color: var(--hs-heat-cool); }
+.risk-medium { border-color: var(--hs-heat-warm); }
+.risk-high { border-color: var(--hs-heat-hot); }
+.risk-extreme { border-color: var(--hs-heat-extreme); }
+.risk-critical { border-color: var(--hs-heat-critical); }
