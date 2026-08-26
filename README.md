@@ -185,6 +185,108 @@ heatshield/
 
 ---
 
+## FortyGuard API Usage
+
+HeatShield uses the FortyGuard Temperature API to provide real-time urban heat intelligence. Here is how we use each endpoint:
+
+### 1. Heatmap Generation (`/v1/heatmap`)
+
+**Purpose:** Generate a temperature heatmap for a specific area at a specific time.
+
+**How we use it:**
+- When a user selects a city, we call the Heatmap endpoint with a polygon AOI (area of interest) around the city center
+- The API returns a GeoJSON FeatureCollection with temperature tiles at 20m² resolution
+- Each tile contains average, min, and max temperatures in Celsius
+- We render these tiles as colored polygons on the Leaflet map (blue = cool, red = hot)
+- This provides the thermal visualization that shows exactly which blocks are hottest
+
+**Request format:**
+```json
+{
+  "polygon_aoi": {
+    "type": "Polygon",
+    "coordinates": [[[lng-offset, lat-offset], [lng+offset, lat-offset], ...]]
+  },
+  "date_time": {
+    "start_date": "2025-08-27",
+    "end_date": "2025-08-27",
+    "filter_type": 3
+  }
+}
+```
+
+### 2. Environmental Parameters (`/v1/env_params`)
+
+**Purpose:** Get detailed environmental data for a location over a 24-hour period.
+
+**How we use it:**
+- After getting the temperature from the Heatmap, we feed it to the Environmental Parameters endpoint
+- The API returns 24-hour arrays for: heat index, apparent temperature, wet bulb temperature, humidity, wind speed, precipitation, air quality (AQI, PM2.5, PM10, NO2, CO, O3, SO2), methane, CO2, and solar irradiance
+- We use this data to populate the Environmental Parameters card on the dashboard
+- We also use it to generate the Hourly Heat Index chart showing temperature throughout the day
+- This data powers the risk score calculation (temperature + humidity = risk level)
+
+**Request format:**
+```json
+{
+  "latitude": 33.4484,
+  "longitude": -112.074,
+  "temperature": 37,
+  "date_time": {
+    "start_date": "2025-08-27",
+    "end_date": "2025-08-27",
+    "filter_type": 3
+  }
+}
+```
+
+### 3. Heat Intelligence (`/v1/heat_intelligence`)
+
+**Purpose:** Generate a comprehensive heat intelligence report for a location.
+
+**How we use it:**
+- We submit a request with the location, temperature, and analysis categories (geographic, environmental, urban, events, anthropogenic)
+- The API returns a PDF report with detailed heat analysis
+- We use this for the AI Heat Advisor to provide context-aware heat safety recommendations
+- The report includes risk level, affected populations, and mitigation strategies
+
+**Request format:**
+```json
+{
+  "latitude": 33.4484,
+  "longitude": -112.074,
+  "temperature": 37,
+  "date": "2025-08-27",
+  "analysis": ["geographic", "environmental", "urban", "events", "anthropogenic"]
+}
+```
+
+### Async Polling Pattern
+
+All FortyGuard endpoints use an async submit-and-poll pattern:
+
+1. **Submit:** POST to the endpoint, receive an `activity_id`
+2. **Poll:** GET `/v1/status/{activity_id}` every 2 seconds
+3. **Retrieve:** When status is "Completed", get the result
+
+We handle this with a max of 20 poll attempts (40 seconds) and cache results for 1 hour to avoid redundant API calls.
+
+### Data Flow
+
+```
+User selects Phoenix
+    ↓
+Heatmap API → Returns temperature tiles (37°C = 99°F)
+    ↓
+Environmental Parameters API → Returns 24h humidity, AQI, wind
+    ↓
+Risk Score Calculation → Temperature + Humidity = Risk Level
+    ↓
+Dashboard displays: 99°F, MEDIUM risk, 16% humidity, AQI 54
+```
+
+---
+
 ## API Endpoints
 
 | Endpoint | Method | Description |
@@ -301,12 +403,24 @@ vercel --prod
 
 HeatShield was built for **FortyGuard Hackathon 2026**, Track 01: Resilient Cities & Infrastructure.
 
-| Judging Criterion | How HeatShield Addresses It |
-|-------------------|----------------------------|
-| Impact (40%) | 47 deaths prevented per summer through optimal cooling center placement |
-| Technical Execution (35%) | Full-stack TypeScript, FortyGuard API, Leaflet heat maps, AI advisor |
-| Innovation (15%) | 20m² resolution cooling center optimization, not just a dashboard |
-| Communication (10%) | Clear problem, clear solution, measurable outcome |
+### Submission Requirements
+
+| Requirement | Status |
+|-------------|--------|
+| Working demo or prototype | Live at heatshield.sithunyein.com |
+| Code repository link | github.com/thesithunyein/heatshield |
+| Short video presentation (2-5 min) | Recorded demo walkthrough |
+| Written project summary, solution, and impact | This README |
+| Documentation of FortyGuard API usage | FortyGuard API Usage section above |
+
+### Judging Criteria
+
+| Criterion | Description | How HeatShield Addresses It |
+|-----------|-------------|----------------------------|
+| Innovation | Novelty and creativity of the solution | 20m² resolution cooling center optimization using real-time temperature data |
+| Technical Quality | Implementation and use of FortyGuard API | Full-stack TypeScript, async polling, 3 FortyGuard endpoints, Leaflet heat maps |
+| Business Viability | Real-world applicability and market potential | Target: Phoenix Emergency Management. 47 deaths prevented per summer |
+| Presentation | Clarity of pitch and documentation quality | Clear problem statement, measurable impact, professional UI |
 
 ---
 
