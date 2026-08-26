@@ -12,8 +12,23 @@
 
 const API_BASE = "https://api.fortyguard.com";
 const API_KEY = process.env.FORTYGUARD_API_KEY ?? "";
-const MAX_POLL_ATTEMPTS = 40;
-const POLL_INTERVAL_MS = 3000;
+const MAX_POLL_ATTEMPTS = 20;
+const POLL_INTERVAL_MS = 2000;
+
+// In-memory cache for completed results (keyed by activity_id)
+const resultCache = new Map<string, { data: unknown; expires: number }>();
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+function getCachedResult(key: string): unknown | null {
+  const entry = resultCache.get(key);
+  if (entry && entry.expires > Date.now()) return entry.data;
+  resultCache.delete(key);
+  return null;
+}
+
+function setCachedResult(key: string, data: unknown): void {
+  resultCache.set(key, { data, expires: Date.now() + CACHE_TTL_MS });
+}
 
 function today(): string {
   return new Date().toISOString().split("T")[0];
@@ -52,6 +67,13 @@ async function submitRequest(
 }
 
 async function pollStatus<T>(activityId: string): Promise<T> {
+  // Check cache first
+  const cached = getCachedResult(activityId);
+  if (cached) {
+    console.log(`[FortyGuard] Returning cached result for ${activityId}`);
+    return cached as T;
+  }
+
   for (let i = 0; i < MAX_POLL_ATTEMPTS; i++) {
     const res = await fetch(`${API_BASE}/v1/status/${activityId}`, {
       headers: { "api-key": API_KEY },
@@ -66,7 +88,9 @@ async function pollStatus<T>(activityId: string): Promise<T> {
 
     if (status === "Completed" || status === "completed") {
       console.log(`[FortyGuard] Task ${activityId} completed`);
-      return (data.data?.result ?? data.data ?? data) as T;
+      const result = (data.data?.result ?? data.data ?? data) as T;
+      setCachedResult(activityId, result);
+      return result;
     }
 
     if (status === "Failed" || status === "failed") {
@@ -96,6 +120,14 @@ export async function createHeatmap(params: {
   const offset = 0.018;
   const { latitude: lat, longitude: lng } = params;
 
+  // Cache key: same city + same date = same result
+  const cacheKey = `heatmap:${lat.toFixed(2)}:${lng.toFixed(2)}:${d}`;
+  const cached = getCachedResult(cacheKey);
+  if (cached) {
+    console.log(`[FortyGuard] Returning cached heatmap for ${cacheKey}`);
+    return cached;
+  }
+
   const { activity_id } = await submitRequest("/v1/heatmap", {
     polygon_aoi: {
       type: "Polygon",
@@ -114,7 +146,9 @@ export async function createHeatmap(params: {
     },
   });
 
-  return pollStatus(activity_id);
+  const result = await pollStatus(activity_id);
+  setCachedResult(cacheKey, result);
+  return result;
 }
 
 /**
@@ -129,6 +163,13 @@ export async function getEnvironmentalParams(params: {
 }) {
   const d = params.date ?? today();
 
+  const cacheKey = `env:${params.latitude.toFixed(2)}:${params.longitude.toFixed(2)}:${d}:${Math.round(params.temperature)}`;
+  const cached = getCachedResult(cacheKey);
+  if (cached) {
+    console.log(`[FortyGuard] Returning cached env_params for ${cacheKey}`);
+    return cached;
+  }
+
   const { activity_id } = await submitRequest("/v1/env_params", {
     latitude: params.latitude,
     longitude: params.longitude,
@@ -140,7 +181,9 @@ export async function getEnvironmentalParams(params: {
     },
   });
 
-  return pollStatus(activity_id);
+  const result = await pollStatus(activity_id);
+  setCachedResult(cacheKey, result);
+  return result;
 }
 
 /**
