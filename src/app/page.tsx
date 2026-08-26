@@ -173,6 +173,47 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ═══ WHO WE ARE — Eloqwnt split layout ═══ */}
+      <section className="bg-[#F5F5F7] px-6 md:px-10 lg:px-16 py-20 md:py-28">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-12 md:gap-16 lg:gap-20">
+          {/* Left — Image/Visual */}
+          <div className="w-full md:w-1/2 shrink-0">
+            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-[#111]">
+              <Image src="/heatshield-logo.png" alt="HeatShield" fill className="object-contain p-12" />
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/10" />
+            </div>
+          </div>
+
+          {/* Right — Text */}
+          <div className="w-full md:w-1/2">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#111]" />
+              <span className="text-xs font-semibold tracking-wider uppercase text-[#111]">Who we are</span>
+            </div>
+            <h2 className="font-bold text-[#111] text-3xl sm:text-4xl md:text-5xl leading-[1.1] mb-6">
+              Building the future<br />of <span className="text-[#9CA0A6]">urban climate</span><br />resilience
+            </h2>
+            <p className="text-[#6B6B70] text-base md:text-lg font-light leading-relaxed mb-5">
+              HeatShield was born from a simple question: why do cities still fly blind when it comes to the deadliest weather hazard?
+            </p>
+            <p className="text-[#6B6B70] text-base md:text-lg font-light leading-relaxed mb-8">
+              We combine FortyGuard&apos;s hyperlocal temperature data with AI to give cities, planners, and everyday people the intelligence they need to act before heat becomes a crisis.
+            </p>
+            <div className="flex items-center gap-8">
+              <div>
+                <div className="text-2xl md:text-3xl font-bold text-[#111]">3.5B</div>
+                <div className="text-[10px] text-[#9CA0A6] uppercase tracking-[0.15em] mt-0.5">People at risk by 2050</div>
+              </div>
+              <div className="h-10 w-px bg-[#E5E5EA]" />
+              <div>
+                <div className="text-2xl md:text-3xl font-bold text-[#111]">#1</div>
+                <div className="text-[10px] text-[#9CA0A6] uppercase tracking-[0.15em] mt-0.5">Deadliest weather hazard</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ═══ STATS — Light bg ═══ */}
       <section className="bg-[#F5F5F7] px-6 md:px-10 lg:px-16 py-16 md:py-20">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-8">
