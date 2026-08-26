@@ -11,7 +11,7 @@ const QUICK = ["Is it safe outside?", "Heat risk in Phoenix?", "Find a cool rout
 export default function AdvisorPage() {
   const [messages, setMessages] = useState<Message[]>([{
     id: "w", role: "assistant",
-    content: "## Welcome to HeatShield Advisor\n\nAsk me about heat safety, routes, risks, or emergency guidance.\n\n- **Safety assessments** — Is it safe to go outside?\n- **Cool routes** — Find the coolest paths\n- **Risk analysis** — Understand heat risks\n- **Emergency** — Heat stroke first aid\n- **Home protection** — Cooling strategies",
+    content: "## Welcome to HeatShield Advisor\n\nAsk me about heat safety, routes, risks, or emergency guidance.\n\n- Safety assessments — Is it safe to go outside?\n- Cool routes — Find the coolest paths\n- Risk analysis — Understand heat risks\n- Emergency — Heat stroke first aid\n- Home protection — Cooling strategies",
     timestamp: new Date().toISOString(),
   }]);
   const [input, setInput] = useState("");
@@ -61,7 +61,7 @@ export default function AdvisorPage() {
                 <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 ${m.role === "user" ? "bg-white text-black" : "border border-white/[0.06] bg-white/[0.03]"}`}>
                   {m.role === "assistant" ? (
                     <div className="space-y-1.5">
-                      {m.content.split("\n").map((l, i) => {
+                      {m.content.replace(/\*\*/g, "").split("\n").map((l, i) => {
                         if (l.startsWith("## ")) return <h2 key={i} className="font-bold text-white text-base sm:text-lg mb-1">{l.replace("## ", "")}</h2>;
                         if (l.startsWith("- ")) return <div key={i} className="flex gap-2 text-xs sm:text-sm text-white/50"><span className="text-white/20">·</span><span>{l.replace("- ", "")}</span></div>;
                         if (l.trim() === "") return <div key={i} className="h-1" />;
