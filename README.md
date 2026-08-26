@@ -35,9 +35,9 @@
 
 Heat kills **977 people per year** in Arizona alone. Since 2013, **4,320 people** have died from extreme heat in the state. In 2024, there were **6,863 heat-related hospital visits**. In 2026, heat deaths are **triple** what they were at the same time in 2025.
 
-**88% of heat victims are found outdoors.** 32% are experiencing homelessness. They die because they don't know where the nearest cooling center is — or the cooling center isn't in the right place.
+**88% of heat victims are found outdoors.** 32% are experiencing homelessness. They die because they don't know where the nearest cooling center is, or the cooling center isn't in the right place.
 
-**The core problem:** Cities deploy cooling centers based on **city-wide average temperatures**, not **street-level data**. One block can be 110°F while the block next door is 95°F. The people on the hot block — mostly elderly, mostly vulnerable — die because the cooling center is in the wrong place.
+**The core problem:** Cities deploy cooling centers based on **city-wide average temperatures**, not **street-level data**. One block can be 110°F while the block next door is 95°F. The people on the hot block, mostly elderly, mostly vulnerable, die because the cooling center is in the wrong place.
 
 **Phoenix cooling centers recorded nearly 30,000 visits** this summer. But placement is still based on averages, not hyperlocal intelligence.
 
@@ -215,7 +215,7 @@ curl -X POST https://heatshield.sithunyein.com/api/intelligence \
     "risk_score": 92,
     "recommendations": [
       "Avoid outdoor activities between 10 AM - 4 PM",
-      "Stay hydrated — drink water every 15 minutes",
+      "Stay hydrated, drink water every 15 minutes",
       "Seek air-conditioned environments"
     ]
   }
@@ -230,8 +230,8 @@ curl -X POST https://heatshield.sithunyein.com/api/intelligence \
 
 - **Node.js** 18+ (recommended: 20+)
 - **npm** or **yarn**
-- **FortyGuard API Key** — [Get one here](https://www.fortyguard.com/hackathon26)
-- **Featherless AI Key** — [Get one here](https://featherless.ai)
+- **FortyGuard API Key**, [Get one here](https://www.fortyguard.com/hackathon26)
+- **Featherless AI Key**, [Get one here](https://featherless.ai)
 
 ### Installation
 
@@ -250,10 +250,10 @@ cp .env.example .env.local
 ### Environment Variables
 
 ```env
-# Required — FortyGuard Temperature API
+# Required, FortyGuard Temperature API
 FORTYGUARD_API_KEY=your_fortyguard_api_key
 
-# Required — Featherless AI for Heat Advisor
+# Required, Featherless AI for Heat Advisor
 FEATHERLESS_API_KEY=your_featherless_api_key
 ```
 
@@ -299,13 +299,13 @@ vercel --prod
 
 ## Hackathon'26
 
-HeatShield was built for **FortyGuard Hackathon 2026** — Track 01: Resilient Cities & Infrastructure.
+HeatShield was built for **FortyGuard Hackathon 2026**, Track 01: Resilient Cities & Infrastructure.
 
 | Judging Criterion | How HeatShield Addresses It |
 |-------------------|----------------------------|
 | Impact (40%) | 47 deaths prevented per summer through optimal cooling center placement |
 | Technical Execution (35%) | Full-stack TypeScript, FortyGuard API, Leaflet heat maps, AI advisor |
-| Innovation (15%) | 20m² resolution cooling center optimization — not just a dashboard |
+| Innovation (15%) | 20m² resolution cooling center optimization, not just a dashboard |
 | Communication (10%) | Clear problem, clear solution, measurable outcome |
 
 ---
@@ -332,7 +332,7 @@ See [SECURITY.md](SECURITY.md) for full details.
 
 ## License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **MIT License**, see the [LICENSE](LICENSE) file for details.
 
 ---
 
@@ -344,11 +344,11 @@ We are committed to making participation in HeatShield a harassment-free experie
 
 ## Acknowledgments
 
-- [FortyGuard](https://www.fortyguard.com) — Temperature API and Hackathon'26
-- [Featherless AI](https://featherless.ai) — AI inference for Heat Advisor
-- [Leaflet](https://leafletjs.com) — Interactive map visualization
-- [Next.js](https://nextjs.org) — React framework
-- [Vercel](https://vercel.com) — Deployment platform
+- [FortyGuard](https://www.fortyguard.com), Temperature API and Hackathon'26
+- [Featherless AI](https://featherless.ai), AI inference for Heat Advisor
+- [Leaflet](https://leafletjs.com), Interactive map visualization
+- [Next.js](https://nextjs.org), React framework
+- [Vercel](https://vercel.com), Deployment platform
 
 ---
 
