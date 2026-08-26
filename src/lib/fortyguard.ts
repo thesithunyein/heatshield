@@ -221,20 +221,23 @@ export function computeRiskScore(data: {
   let score = 0;
   const tempC = data.temperature_c;
 
-  // Temperature component (0-50 points) — thresholds in Celsius
-  if (tempC >= 54) score += 50;       // 130°F
-  else if (tempC >= 49) score += 45;  // 120°F
-  else if (tempC >= 43) score += 38;  // 110°F
-  else if (tempC >= 38) score += 30;  // 100°F
-  else if (tempC >= 32) score += 20;  // 90°F
-  else if (tempC >= 27) score += 10;  // 80°F
+  // Temperature is the primary driver (0-65 points)
+  if (tempC >= 50) score += 65;       // 122°F+
+  else if (tempC >= 46) score += 58;  // 115°F+
+  else if (tempC >= 43) score += 50;  // 110°F+
+  else if (tempC >= 40) score += 42;  // 104°F+
+  else if (tempC >= 37) score += 35;  // 99°F+
+  else if (tempC >= 35) score += 28;  // 95°F+
+  else if (tempC >= 32) score += 20;  // 90°F+
+  else if (tempC >= 27) score += 10;  // 80°F+
   else score += 5;
 
-  // Humidity multiplier (0-25 points)
+  // Humidity multiplier (0-35 points) — humid heat is more dangerous
   if (data.humidity) {
-    if (data.humidity >= 80) score += 25;
-    else if (data.humidity >= 60) score += 18;
-    else if (data.humidity >= 40) score += 10;
+    if (data.humidity >= 80) score += 35;
+    else if (data.humidity >= 60) score += 25;
+    else if (data.humidity >= 40) score += 15;
+    else if (data.humidity >= 25) score += 8;
     else score += 3;
   }
 

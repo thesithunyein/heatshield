@@ -28,12 +28,13 @@ interface HourlyPoint {
 }
 
 function getBarColor(tempF: number): string {
-  if (tempF >= 115) return "#FAFAFA";
-  if (tempF >= 110) return "#D4D4D8";
-  if (tempF >= 105) return "#A1A1AA";
-  if (tempF >= 100) return "#71717A";
-  if (tempF >= 95) return "#52525B";
-  return "#3F3F46";
+  if (tempF >= 115) return "#F87171"; // red
+  if (tempF >= 110) return "#FB923C"; // orange
+  if (tempF >= 105) return "#FBBF24"; // amber
+  if (tempF >= 100) return "#A3E635"; // lime
+  if (tempF >= 95) return "#34D399";  // emerald
+  if (tempF >= 90) return "#22D3EE";  // cyan
+  return "#60A5FA";                    // blue
 }
 
 /**
@@ -126,19 +127,24 @@ async function fetchCityZone(city: City): Promise<HeatZone | null> {
 }
 
 function computeRisk(tempC: number, humidity: number): number {
+  // Temperature is the primary driver (0-65 points)
   let score = 0;
-  if (tempC >= 54) score += 50;
-  else if (tempC >= 49) score += 45;
-  else if (tempC >= 43) score += 38;
-  else if (tempC >= 38) score += 30;
-  else if (tempC >= 32) score += 20;
-  else if (tempC >= 27) score += 10;
+  if (tempC >= 50) score += 65;       // 122°F+
+  else if (tempC >= 46) score += 58;  // 115°F+
+  else if (tempC >= 43) score += 50;  // 110°F+
+  else if (tempC >= 40) score += 42;  // 104°F+
+  else if (tempC >= 37) score += 35;  // 99°F+  ← Phoenix range
+  else if (tempC >= 35) score += 28;  // 95°F+
+  else if (tempC >= 32) score += 20;  // 90°F+
+  else if (tempC >= 27) score += 10;  // 80°F+
   else score += 5;
 
-  if (humidity >= 80) score += 25;
-  else if (humidity >= 60) score += 18;
-  else if (humidity >= 40) score += 10;
-  else score += 3;
+  // Humidity multiplier (0-35 points) — humid heat is more dangerous
+  if (humidity >= 80) score += 35;
+  else if (humidity >= 60) score += 25;
+  else if (humidity >= 40) score += 15;
+  else if (humidity >= 25) score += 8;
+  else score += 3;  // Very dry = slight relief
 
   return Math.max(0, Math.min(100, score));
 }
@@ -315,7 +321,7 @@ export default function DashboardPage() {
                       return (
                         <div key={d.hour} className="flex-1 flex flex-col items-center gap-1">
                           <span className="text-[8px] sm:text-[9px] font-mono text-white/30">{d.temp}°</span>
-                          <div className="w-full rounded-t-sm" style={{ height: `${height}%`, background: getBarColor(d.temp), opacity: 0.7 }} />
+                          <div className="w-full rounded-t-md shadow-lg" style={{ height: `${height}%`, background: `linear-gradient(to top, ${getBarColor(d.temp)}88, ${getBarColor(d.temp)})`, minHeight: '4px' }} />
                           <span className="text-[8px] font-mono text-white/20">{d.hour}h</span>
                         </div>
                       );
