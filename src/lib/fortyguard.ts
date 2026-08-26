@@ -1,18 +1,27 @@
 /**
  * FortyGuard Temperature API Client
  *
- * Handles the async submit → poll → retrieve pattern for all 6 endpoints.
- * API key is read server-side only (never exposed to client).
+ * Correct API format (discovered via testing):
+ * - Heatmap: /v1/heatmap with polygon_aoi + date_time {start_date, end_date, filter_type: 3|4}
+ * - Env Params: /v1/env_params with latitude, longitude, temperature, date_time
+ * - Heat Intelligence: /v1/heat_intelligence with latitude, longitude, temperature, date, analysis[]
+ * - Status: /v1/status/{activity_id}
+ *
+ * All endpoints are async: submit → poll → retrieve
  */
 
 const API_BASE = "https://api.fortyguard.com";
 const API_KEY = process.env.FORTYGUARD_API_KEY ?? "";
-const MAX_POLL_ATTEMPTS = 30;
+const MAX_POLL_ATTEMPTS = 40;
 const POLL_INTERVAL_MS = 3000;
+
+function today(): string {
+  return new Date().toISOString().split("T")[0];
+}
 
 // ── Internal helpers ─────────────────────────────
 
-async function submitRequest<T>(
+async function submitRequest(
   endpoint: string,
   body: Record<string, unknown>
 ): Promise<{ activity_id: string }> {
@@ -27,43 +36,43 @@ async function submitRequest<T>(
     body: JSON.stringify(body),
   });
 
+  const text = await res.text();
+  console.log(`[FortyGuard] ${endpoint} status ${res.status}: ${text.slice(0, 200)}`);
+
   if (!res.ok) {
-    const text = await res.text();
-    console.error(`[FortyGuard] Submit error ${res.status}: ${text}`);
     throw new Error(`FortyGuard API error ${res.status}: ${text}`);
   }
 
-  const data = await res.json();
-  console.log(`[FortyGuard] Got activity_id: ${data.activity_id}`);
-  return data;
+  const data = JSON.parse(text);
+  if (data.error) {
+    throw new Error(`FortyGuard API error: ${data.message ?? JSON.stringify(data)}`);
+  }
+
+  return data.data;
 }
 
-async function pollStatus<T>(
-  activityId: string
-): Promise<T> {
+async function pollStatus<T>(activityId: string): Promise<T> {
   for (let i = 0; i < MAX_POLL_ATTEMPTS; i++) {
     const res = await fetch(`${API_BASE}/v1/status/${activityId}`, {
       headers: { "api-key": API_KEY },
     });
 
     if (!res.ok) {
-      console.error(`[FortyGuard] Poll error ${res.status}`);
       throw new Error(`Status poll error ${res.status}`);
     }
 
     const data = await res.json();
+    const status = data.data?.status ?? data.status;
 
-    if (data.status === "completed") {
+    if (status === "Completed" || status === "completed") {
       console.log(`[FortyGuard] Task ${activityId} completed`);
-      return data as T;
+      return (data.data?.result ?? data.data ?? data) as T;
     }
 
-    if (data.status === "failed") {
-      console.error(`[FortyGuard] Task ${activityId} failed: ${data.error}`);
-      throw new Error(`Task failed: ${data.error ?? "unknown error"}`);
+    if (status === "Failed" || status === "failed") {
+      throw new Error(`Task failed: ${data.data?.error ?? "unknown"}`);
     }
 
-    // Still processing — wait before next poll
     await new Promise((r) => setTimeout(r, POLL_INTERVAL_MS));
   }
 
@@ -72,95 +81,110 @@ async function pollStatus<T>(
 
 // ── Public API methods ───────────────────────────
 
+/**
+ * Heatmap — returns GeoJSON FeatureCollection with temperature tiles
+ * Each feature has: average_temperature, min_temperature, max_temperature (Celsius)
+ */
 export async function createHeatmap(params: {
-  polygon_aoi: { type: "Polygon"; coordinates: number[][][] };
-  date: string;
-  hour?: number;
-  end_hour?: number;
-}) {
-  const { activity_id } = await submitRequest("/v1/heatmap", {
-    polygon_aoi: params.polygon_aoi,
-    date: params.date,
-    ...(params.hour !== undefined && { hour: params.hour }),
-    ...(params.end_hour !== undefined && { end_hour: params.end_hour }),
-  });
-  return pollStatus(activity_id);
-}
-
-export async function getHeatIntelligence(params: {
   latitude: number;
   longitude: number;
   date?: string;
-  categories?: string[];
+  filter_type?: number;
 }) {
-  const { activity_id } = await submitRequest("/v1/heat-intelligence", {
-    latitude: params.latitude,
-    longitude: params.longitude,
-    ...(params.date && { date: params.date }),
-    ...(params.categories && { categories: params.categories }),
+  const d = params.date ?? today();
+  // Build polygon AOI (~2km around point)
+  const offset = 0.018;
+  const { latitude: lat, longitude: lng } = params;
+
+  const { activity_id } = await submitRequest("/v1/heatmap", {
+    polygon_aoi: {
+      type: "Polygon",
+      coordinates: [[
+        [lng - offset, lat - offset],
+        [lng + offset, lat - offset],
+        [lng + offset, lat + offset],
+        [lng - offset, lat + offset],
+        [lng - offset, lat - offset],
+      ]],
+    },
+    date_time: {
+      start_date: d,
+      end_date: d,
+      filter_type: params.filter_type ?? 3,
+    },
   });
+
   return pollStatus(activity_id);
 }
 
+/**
+ * Environmental Parameters — returns 24-hour arrays of env data
+ * Requires a temperature input (Celsius)
+ */
 export async function getEnvironmentalParams(params: {
   latitude: number;
   longitude: number;
+  temperature: number;
   date?: string;
 }) {
+  const d = params.date ?? today();
+
   const { activity_id } = await submitRequest("/v1/env_params", {
     latitude: params.latitude,
     longitude: params.longitude,
-    ...(params.date && { date: params.date }),
+    temperature: params.temperature,
+    date_time: {
+      start_date: d,
+      end_date: d,
+      filter_type: 3,
+    },
   });
+
   return pollStatus(activity_id);
 }
 
-export async function getSatelliteSegmentation(params: {
+/**
+ * Heat Intelligence — returns PDF download link
+ * Requires temperature (Celsius), date, and analysis categories
+ */
+export async function getHeatIntelligence(params: {
   latitude: number;
   longitude: number;
-  radius?: number;
+  temperature: number;
+  date?: string;
+  analysis?: string[];
 }) {
-  const { activity_id } = await submitRequest("/v1/satellite", {
+  const d = params.date ?? today();
+
+  const { activity_id } = await submitRequest("/v1/heat_intelligence", {
     latitude: params.latitude,
     longitude: params.longitude,
-    ...(params.radius && { radius: params.radius }),
+    temperature: params.temperature,
+    date: d,
+    analysis: params.analysis ?? ["geographic", "environmental", "urban", "events", "anthropogenic"],
   });
+
   return pollStatus(activity_id);
 }
 
-export async function getStreetViewSegmentation(params: {
-  latitude: number;
-  longitude: number;
-  heading?: number;
-  pitch?: number;
-}) {
-  const { activity_id } = await submitRequest("/v1/streetview", {
-    latitude: params.latitude,
-    longitude: params.longitude,
-    ...(params.heading !== undefined && { heading: params.heading }),
-    ...(params.pitch !== undefined && { pitch: params.pitch }),
-  });
-  return pollStatus(activity_id);
-}
-
-// ── Heat Risk Scoring Engine ─────────────────────
+// ── Risk Scoring Engine ──────────────────────────
 
 export function computeRiskScore(data: {
-  temperature_f: number;
+  temperature_c: number;
   humidity?: number;
   uv_index?: number;
   wind_speed?: number;
 }): { score: number; level: string; color: string } {
   let score = 0;
+  const tempC = data.temperature_c;
 
-  // Temperature component (0-50 points)
-  const tempF = data.temperature_f;
-  if (tempF >= 130) score += 50;
-  else if (tempF >= 120) score += 45;
-  else if (tempF >= 110) score += 38;
-  else if (tempF >= 100) score += 30;
-  else if (tempF >= 90) score += 20;
-  else if (tempF >= 80) score += 10;
+  // Temperature component (0-50 points) — thresholds in Celsius
+  if (tempC >= 54) score += 50;       // 130°F
+  else if (tempC >= 49) score += 45;  // 120°F
+  else if (tempC >= 43) score += 38;  // 110°F
+  else if (tempC >= 38) score += 30;  // 100°F
+  else if (tempC >= 32) score += 20;  // 90°F
+  else if (tempC >= 27) score += 10;  // 80°F
   else score += 5;
 
   // Humidity multiplier (0-25 points)
@@ -171,7 +195,7 @@ export function computeRiskScore(data: {
     else score += 3;
   }
 
-  // UV index component (0-15 points)
+  // UV index (0-15 points)
   if (data.uv_index) {
     if (data.uv_index >= 11) score += 15;
     else if (data.uv_index >= 8) score += 12;
@@ -189,64 +213,41 @@ export function computeRiskScore(data: {
   let level: string;
   let color: string;
 
-  if (score >= 85) {
-    level = "critical";
-    color = "var(--hs-heat-critical)";
-  } else if (score >= 70) {
-    level = "extreme";
-    color = "var(--hs-heat-extreme)";
-  } else if (score >= 50) {
-    level = "high";
-    color = "var(--hs-heat-hot)";
-  } else if (score >= 30) {
-    level = "medium";
-    color = "var(--hs-heat-warm)";
-  } else {
-    level = "low";
-    color = "var(--hs-heat-cool)";
-  }
+  if (score >= 85) { level = "critical"; color = "#DC2626"; }
+  else if (score >= 70) { level = "extreme"; color = "#EF4444"; }
+  else if (score >= 50) { level = "high"; color = "#F59E0B"; }
+  else if (score >= 30) { level = "medium"; color = "#84CC16"; }
+  else { level = "low"; color = "#3B82F6"; }
 
   return { score, level, color };
 }
 
-// ── Mock data for demo / when API key not set ────
+/**
+ * Celsius to Fahrenheit conversion
+ */
+export function cToF(celsius: number): number {
+  return celsius * 9 / 5 + 32;
+}
 
+/**
+ * Mock data for when API key is not set
+ */
 export function getMockHeatIntelligence(latitude: number, longitude: number) {
-  console.log("[FortyGuard] Using mock data (no API key)");
-  const tempF = 85 + Math.random() * 35;
+  const tempC = 35 + Math.random() * 10; // 35-45°C
+  const tempF = cToF(tempC);
   const humidity = 20 + Math.random() * 60;
   const uvIndex = 3 + Math.random() * 9;
-  const risk = computeRiskScore({
-    temperature_f: tempF,
-    humidity,
-    uv_index: uvIndex,
-  });
+  const risk = computeRiskScore({ temperature_c: tempC, humidity, uv_index: uvIndex });
 
   return {
-    status: "completed" as const,
-    result: {
-      location: {
-        latitude,
-        longitude,
-        city: "Demo City",
-        country: "XX",
-      },
-      temperature: {
-        current: tempF,
-        feels_like: tempF + (humidity > 50 ? 5 : -2),
-        unit: "F",
-      },
-      risk_level: risk.level,
-      risk_score: risk.score,
-      analysis: {
-        environmental: { humidity, uv_index: uvIndex },
-      },
-      recommendations: [
-        "Stay hydrated — drink water every 20 minutes",
-        "Seek shade between 11 AM and 3 PM",
-        "Wear light-colored, loose-fitting clothing",
-        "Check on vulnerable neighbors and elderly",
-      ],
-    },
+    temperature: { current: tempF, feels_like: tempF + 5, unit: "F" },
+    risk_level: risk.level,
+    risk_score: risk.score,
+    recommendations: [
+      "Stay hydrated — drink water every 20 minutes",
+      "Seek shade between 11 AM and 3 PM",
+      "Wear light-colored, loose-fitting clothing",
+      "Check on vulnerable neighbors and elderly",
+    ],
   };
 }

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHeatmap, getMockHeatIntelligence } from "@/lib/fortyguard";
+import { createHeatmap, cToF } from "@/lib/fortyguard";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { latitude, longitude, date, hour } = body;
+    const { latitude, longitude, date } = body;
 
     if (latitude === undefined || longitude === undefined) {
       return NextResponse.json({ error: "latitude and longitude are required" }, { status: 400 });
@@ -12,48 +12,31 @@ export async function POST(req: NextRequest) {
 
     // Use mock heatmap if no API key
     if (!process.env.FORTYGUARD_API_KEY) {
-      // Generate mock heatmap GeoJSON
       const features = [];
       for (let i = -3; i <= 3; i++) {
         for (let j = -3; j <= 3; j++) {
           const lat = latitude + i * 0.005;
           const lng = longitude + j * 0.005;
-          const temp = 85 + Math.random() * 30;
+          const tempC = 35 + Math.random() * 10;
           features.push({
             type: "Feature",
             geometry: { type: "Point", coordinates: [lng, lat] },
-            properties: { temperature: temp, unit: "F" },
+            properties: { average_temperature: tempC, min_temperature: tempC - 3, max_temperature: tempC + 3 },
           });
         }
       }
       return NextResponse.json({
-        result: {
-          geojson: { type: "FeatureCollection", features },
-          metadata: { min_temp: 85, max_temp: 115, avg_temp: 100, unit: "F" },
-        },
+        map_data: { type: "FeatureCollection", features },
       });
     }
 
-    // Build polygon AOI around the point (roughly 1km x 1km)
-    const offset = 0.009; // ~1km
-    const polygon = {
-      type: "Polygon" as const,
-      coordinates: [[
-        [longitude - offset, latitude - offset],
-        [longitude + offset, latitude - offset],
-        [longitude + offset, latitude + offset],
-        [longitude - offset, latitude + offset],
-        [longitude - offset, latitude - offset],
-      ]],
-    };
-
     const result = await createHeatmap({
-      polygon_aoi: polygon,
-      date: date || new Date().toISOString().split("T")[0],
-      ...(hour !== undefined && { hour }),
-    });
+      latitude,
+      longitude,
+      date,
+    }) as { map_data?: { type: string; features: unknown[] } };
 
-    return NextResponse.json({ result: (result as Record<string, unknown>).result ?? result });
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Heatmap error:", error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

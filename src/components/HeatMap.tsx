@@ -8,27 +8,34 @@ interface Props {
   temperature?: number;
 }
 
-interface HeatPoint {
+interface HeatTile {
   lat: number;
   lng: number;
-  temp: number;
+  avgTemp: number;
+  minTemp: number;
+  maxTemp: number;
+  polygon?: number[][][];
 }
 
-function tempToColor(temp: number, min: number, max: number): string {
-  const t = Math.max(0, Math.min(1, (temp - min) / (max - min)));
-  if (t < 0.2) return "#3B82F6";
-  if (t < 0.4) return "#06B6D4";
-  if (t < 0.6) return "#84CC16";
-  if (t < 0.8) return "#F59E0B";
-  return "#EF4444";
+function tempToColor(tempC: number): string {
+  if (tempC >= 45) return "#DC2626";  // >113°F extreme
+  if (tempC >= 40) return "#EF4444";  // >104°F
+  if (tempC >= 37) return "#F59E0B";  // >99°F
+  if (tempC >= 33) return "#84CC16";  // >91°F
+  if (tempC >= 27) return "#06B6D4";  // >80°F
+  return "#3B82F6";                    // cool
 }
 
 export default function HeatMap({ city, temperature = 100 }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<unknown>(null);
-  const heatLayerRef = useRef<unknown[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapInstance = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const heatLayerRef = useRef<any[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const markerRef = useRef<any>(null);
   const [mounted, setMounted] = useState(false);
-  const [heatPoints, setHeatPoints] = useState<HeatPoint[]>([]);
+  const [heatTiles, setHeatTiles] = useState<HeatTile[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -38,29 +45,36 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
   useEffect(() => {
     async function fetchHeatmap() {
       try {
-        const today = new Date().toISOString().split("T")[0];
-        const currentHour = new Date().getHours();
         const res = await fetch("/api/heatmap", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             latitude: city.latitude,
             longitude: city.longitude,
-            date: today,
-            hour: currentHour,
           }),
         });
         const data = await res.json();
-        if (data.result?.geojson?.features) {
-          const points: HeatPoint[] = data.result.geojson.features
-            .filter((f: { geometry?: { type: string; coordinates?: number[] } }) => f.geometry?.type === "Point")
-            .map((f: { geometry: { coordinates: number[] }; properties: { temperature: number } }) => ({
-              lat: f.geometry.coordinates[1],
-              lng: f.geometry.coordinates[0],
-              temp: f.properties.temperature,
-            }));
-          setHeatPoints(points);
-        }
+
+        // Parse GeoJSON FeatureCollection with polygon tiles
+        const features = data.map_data?.features ?? data.result?.geojson?.features ?? [];
+        const tiles: HeatTile[] = features
+          .filter((f: { geometry?: { type: string } }) => f.geometry?.type === "Polygon")
+          .map((f: { geometry: { coordinates: number[][][] }; properties: { average_temperature: number; min_temperature: number; max_temperature: number } }) => {
+            // Get centroid from polygon
+            const coords = f.geometry.coordinates[0];
+            const avgLng = coords.reduce((s: number, c: number[]) => s + c[0], 0) / coords.length;
+            const avgLat = coords.reduce((s: number, c: number[]) => s + c[1], 0) / coords.length;
+            return {
+              lat: avgLat,
+              lng: avgLng,
+              avgTemp: f.properties.average_temperature,
+              minTemp: f.properties.min_temperature,
+              maxTemp: f.properties.max_temperature,
+              polygon: f.geometry.coordinates,
+            };
+          });
+
+        setHeatTiles(tiles);
       } catch {
         // Silently fail — map still works without heatmap
       }
@@ -75,10 +89,26 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
       import("leaflet/dist/leaflet.css" as string),
       import("leaflet"),
     ]).then(([, L]) => {
+      // Update existing map
       if (mapInstance.current) {
-        const map = mapInstance.current as { setView: (center: [number, number], zoom: number) => void; invalidateSize: () => void };
-        map.setView([city.latitude, city.longitude], 12);
+        const map = mapInstance.current as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+        map.setView([city.latitude, city.longitude], 13);
         setTimeout(() => map.invalidateSize(), 100);
+
+        // Update marker
+        if (markerRef.current) {
+          (markerRef.current as { remove: () => void }).remove();
+        }
+        const color = tempToColor(temperature - 273.15 > 200 ? 40 : (temperature - 32) * 5 / 9); // rough F to C
+        const tempC = (temperature - 32) * 5 / 9;
+        const c = tempToColor(tempC);
+        const icon = L.divIcon({
+          className: "",
+          html: `<div style="width:52px;height:52px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;color:#fff;font-family:monospace;font-weight:700;font-size:13px;box-shadow:0 0 20px ${c}88, 0 4px 12px rgba(0,0,0,0.5);">${Math.round(temperature)}°F</div>`,
+          iconSize: [52, 52],
+          iconAnchor: [26, 26],
+        });
+        markerRef.current = L.marker([city.latitude, city.longitude], { icon }).addTo(map);
         return;
       }
 
@@ -86,52 +116,41 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
 
       const map = L.map(mapRef.current, {
         center: [city.latitude, city.longitude],
-        zoom: 12,
+        zoom: 13,
         zoomControl: false,
         attributionControl: false,
       });
 
       L.control.zoom({ position: "bottomright" }).addTo(map);
 
-      L.tileLayer("https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png", {
-        maxZoom: 20,
-        attribution: "&copy; Stadia Maps",
+      // Free OpenStreetMap dark tiles — no auth needed
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap",
       }).addTo(map);
 
-      // Temperature color based on heat
-      const getMarkerColor = (temp: number) => {
-        if (temp >= 110) return "#EF4444";
-        if (temp >= 100) return "#F59E0B";
-        if (temp >= 90) return "#84CC16";
-        return "#3B82F6";
-      };
-
-      const color = getMarkerColor(temperature);
+      // Temperature color
+      const tempC = (temperature - 32) * 5 / 9;
+      const c = tempToColor(tempC);
 
       // Custom marker with temperature
       const icon = L.divIcon({
         className: "",
-        html: `
-          <div style="position:relative;display:flex;align-items:center;justify-content:center;">
-            <div style="width:56px;height:56px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;color:#fff;font-family:Inter,monospace;font-weight:700;font-size:14px;box-shadow:0 0 20px ${color}88, 0 4px 16px rgba(0,0,0,0.4);">
-              ${Math.round(temperature)}°F
-            </div>
-          </div>
-        `,
-        iconSize: [56, 56],
-        iconAnchor: [28, 28],
+        html: `<div style="width:52px;height:52px;border-radius:50%;background:${c};display:flex;align-items:center;justify-content:center;color:#fff;font-family:monospace;font-weight:700;font-size:13px;box-shadow:0 0 20px ${c}88, 0 4px 12px rgba(0,0,0,0.5);">${Math.round(temperature)}°F</div>`,
+        iconSize: [52, 52],
+        iconAnchor: [26, 26],
       });
 
-      L.marker([city.latitude, city.longitude], { icon }).addTo(map);
+      markerRef.current = L.marker([city.latitude, city.longitude], { icon }).addTo(map);
 
       // Heat radius circle
       L.circle([city.latitude, city.longitude], {
         radius: 5000,
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.06,
-        weight: 2,
-        opacity: 0.25,
+        color: c,
+        fillColor: c,
+        fillOpacity: 0.05,
+        weight: 1.5,
+        opacity: 0.2,
       }).addTo(map);
 
       mapInstance.current = map;
@@ -142,13 +161,14 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
       if (mapInstance.current && typeof (mapInstance.current as { remove?: () => void }).remove === "function") {
         (mapInstance.current as { remove: () => void }).remove();
         mapInstance.current = null;
+        markerRef.current = null;
       }
     };
   }, [mounted, city.latitude, city.longitude, city.name, temperature]);
 
-  // Render heat overlay points on map
+  // Render heat tiles as colored polygons on map
   useEffect(() => {
-    if (!mapInstance.current || heatPoints.length === 0) return;
+    if (!mapInstance.current || heatTiles.length === 0) return;
 
     import("leaflet").then((L) => {
       const map = mapInstance.current as { addLayer: (layer: unknown) => void };
@@ -159,28 +179,48 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
       });
       heatLayerRef.current = [];
 
-      const temps = heatPoints.map((p) => p.temp);
-      const minTemp = Math.min(...temps);
-      const maxTemp = Math.max(...temps);
-
-      heatPoints.forEach((point) => {
-        const color = tempToColor(point.temp, minTemp, maxTemp);
-        const circle = L.circle([point.lat, point.lng], {
-          radius: 400,
-          color: color,
-          fillColor: color,
-          fillOpacity: 0.25,
-          weight: 0,
-          opacity: 0,
-        });
-        map.addLayer(circle);
-        heatLayerRef.current.push(circle);
+      heatTiles.forEach((tile) => {
+        const color = tempToColor(tile.avgTemp);
+        if (tile.polygon && tile.polygon.length > 0) {
+          // Render as polygon
+          const latlngs = tile.polygon[0].map((c: number[]) => [c[1], c[0]] as [number, number]);
+          const polygon = L.polygon(latlngs, {
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.2,
+            weight: 0,
+            opacity: 0,
+          });
+          map.addLayer(polygon);
+          heatLayerRef.current.push(polygon);
+        } else {
+          // Fallback: render as circle
+          const circle = L.circle([tile.lat, tile.lng], {
+            radius: 200,
+            color: color,
+            fillColor: color,
+            fillOpacity: 0.2,
+            weight: 0,
+            opacity: 0,
+          });
+          map.addLayer(circle);
+          heatLayerRef.current.push(circle);
+        }
       });
     });
-  }, [heatPoints]);
+  }, [heatTiles]);
+
+  // Convert F to C for the current temperature display
+  const tempC = (temperature - 32) * 5 / 9;
+  const markerColor = tempToColor(tempC);
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden border border-[#333]" style={{ height: "clamp(240px, 40vw, 420px)" }}>
+    <div className="relative w-full rounded-2xl overflow-hidden border border-white/[0.06]" style={{ height: "clamp(240px, 40vw, 420px)" }}>
+      {/* CSS to make OSM tiles look dark */}
+      <style>{`
+        .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(1.2); }
+        .leaflet-control-zoom a { background: rgba(0,0,0,0.7) !important; color: #fff !important; }
+      `}</style>
       {!mounted && (
         <div className="absolute inset-0 bg-[#111] flex items-center justify-center z-10">
           <div className="text-[#666] text-sm">Loading map...</div>
@@ -197,7 +237,7 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
         <span className="text-sm font-bold text-white">{Math.round(temperature)}°F</span>
       </div>
       {/* Heatmap legend */}
-      {heatPoints.length > 0 && (
+      {heatTiles.length > 0 && (
         <div className="absolute bottom-3 left-3 z-[400] bg-black/70 backdrop-blur-md rounded-lg px-3 py-2 border border-white/10">
           <div className="flex items-center gap-1.5">
             <div className="flex h-1.5 w-24 rounded-full overflow-hidden">

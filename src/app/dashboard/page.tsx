@@ -8,24 +8,18 @@ import RiskCard from "@/components/RiskCard";
 import dynamic from "next/dynamic";
 import type { City, HeatZone } from "@/lib/types";
 import { PRESET_CITIES } from "@/lib/types";
+import { cToF } from "@/lib/fortyguard";
 
 const HeatMap = dynamic(() => import("@/components/HeatMap"), { ssr: false });
 
-interface IntelData {
-  temperature: { current: number; feels_like: number; unit: string };
-  risk_level: string;
-  risk_score: number;
-  recommendations: string[];
-  location?: { city?: string; country?: string };
-}
-
 interface EnvData {
-  heat_index: number;
-  apparent_temperature: number;
-  wet_bulb_temperature: number;
-  humidity: number;
-  wind_speed: number;
-  uv_index: number;
+  heat_index_celsius: number[];
+  apparent_temperature_celsius: number[];
+  relative_humidity_percent: number[];
+  wind_speed_kmh: number[];
+  air_quality_aqi: number[];
+  precipitation_mm: number[];
+  wet_bulb_temperature_celsius?: number[];
 }
 
 interface HourlyPoint {
@@ -33,37 +27,85 @@ interface HourlyPoint {
   temp: number;
 }
 
-function getBarColor(temp: number): string {
-  if (temp >= 115) return "#FAFAFA";
-  if (temp >= 110) return "#D4D4D8";
-  if (temp >= 105) return "#A1A1AA";
-  if (temp >= 100) return "#71717A";
-  if (temp >= 95) return "#52525B";
+function getBarColor(tempF: number): string {
+  if (tempF >= 115) return "#FAFAFA";
+  if (tempF >= 110) return "#D4D4D8";
+  if (tempF >= 105) return "#A1A1AA";
+  if (tempF >= 100) return "#71717A";
+  if (tempF >= 95) return "#52525B";
   return "#3F3F46";
 }
 
-async function fetchCityData(city: City): Promise<HeatZone | null> {
+/**
+ * Fetch heatmap data to get REAL temperature from FortyGuard tiles
+ */
+async function fetchHeatmapTemp(city: City): Promise<{ tempC: number; tempF: number } | null> {
   try {
-    const iRes = await fetch("/api/intelligence", {
+    const res = await fetch("/api/heatmap", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
     });
-    const iData = await iRes.json();
-    const intel = iData.result;
+    const data = await res.json();
+    const features = data.map_data?.features ?? [];
+    if (features.length > 0) {
+      // Find the tile closest to the center
+      const center = features.reduce(
+        (closest: { tile: typeof features[0]; dist: number }, tile: typeof features[0]) => {
+          const c = tile.geometry?.coordinates?.[0];
+          if (!c) return closest;
+          const avgLng = c.reduce((s: number, p: number[]) => s + p[0], 0) / c.length;
+          const avgLat = c.reduce((s: number, p: number[]) => s + p[1], 0) / c.length;
+          const dist = Math.abs(avgLat - city.latitude) + Math.abs(avgLng - city.longitude);
+          return dist < closest.dist ? { tile, dist } : closest;
+        },
+        { tile: features[0], dist: Infinity }
+      );
+      const avgTempC = center.tile.properties?.average_temperature ?? 38;
+      return { tempC: avgTempC, tempF: cToF(avgTempC) };
+    }
+  } catch (e) {
+    console.error("Heatmap fetch failed:", e);
+  }
+  return null;
+}
 
-    if (!intel) return null;
+/**
+ * Fetch zone data using heatmap temperature as input
+ */
+async function fetchCityZone(city: City): Promise<HeatZone | null> {
+  try {
+    // Step 1: Get real temperature from heatmap
+    const heatData = await fetchHeatmapTemp(city);
+    const tempC = heatData?.tempC ?? 38;
+    const tempF = heatData?.tempF ?? cToF(tempC);
 
-    // Small delay before second call to avoid rate limiting
-    await new Promise((r) => setTimeout(r, 200));
+    // Step 2: Get environmental params using that temperature
+    let humidity = 20;
+    let heatIndexC = tempC;
+    try {
+      const eRes = await fetch("/api/env-params", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          latitude: city.latitude,
+          longitude: city.longitude,
+          temperature: tempC,
+        }),
+      });
+      const eData = await eRes.json();
+      const params = eData.result?.locations?.[0]?.parameters;
+      if (params) {
+        humidity = params.relative_humidity_percent?.[12] ?? 20; // noon value
+        heatIndexC = params.heat_index_celsius?.[12] ?? tempC;
+      }
+    } catch {
+      // Continue with defaults
+    }
 
-    const eRes = await fetch("/api/env-params", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
-    });
-    const eData = await eRes.json();
-    const envResult = eData.result;
+    // Step 3: Compute risk score
+    const riskScore = computeRisk(tempC, humidity);
+    const riskLevel = riskScore >= 85 ? "critical" : riskScore >= 70 ? "extreme" : riskScore >= 50 ? "high" : riskScore >= 30 ? "medium" : "low";
 
     return {
       id: `z-${city.name}`,
@@ -71,22 +113,42 @@ async function fetchCityData(city: City): Promise<HeatZone | null> {
       city: city.name,
       latitude: city.latitude,
       longitude: city.longitude,
-      temperature: intel.temperature?.current ?? 0,
-      riskLevel: (intel.risk_level ?? "low") as HeatZone["riskLevel"],
-      riskScore: intel.risk_score ?? 0,
-      heatIndex: envResult?.heat_index ?? intel.temperature?.feels_like ?? 0,
+      temperature: Math.round(tempF),
+      riskLevel: riskLevel as HeatZone["riskLevel"],
+      riskScore,
+      heatIndex: Math.round(cToF(heatIndexC)),
       lastUpdated: new Date().toISOString(),
     };
   } catch (e) {
-    console.error(`Failed to fetch data for ${city.name}:`, e);
+    console.error(`Failed to fetch zone for ${city.name}:`, e);
     return null;
   }
 }
 
+function computeRisk(tempC: number, humidity: number): number {
+  let score = 0;
+  if (tempC >= 54) score += 50;
+  else if (tempC >= 49) score += 45;
+  else if (tempC >= 43) score += 38;
+  else if (tempC >= 38) score += 30;
+  else if (tempC >= 32) score += 20;
+  else if (tempC >= 27) score += 10;
+  else score += 5;
+
+  if (humidity >= 80) score += 25;
+  else if (humidity >= 60) score += 18;
+  else if (humidity >= 40) score += 10;
+  else score += 3;
+
+  return Math.max(0, Math.min(100, score));
+}
+
 export default function DashboardPage() {
   const [selectedCity, setSelectedCity] = useState<City>(PRESET_CITIES[0]);
-  const [intel, setIntel] = useState<IntelData | null>(null);
+  const [temperature, setTemperature] = useState<number>(0);
   const [env, setEnv] = useState<EnvData | null>(null);
+  const [riskScore, setRiskScore] = useState<number>(0);
+  const [riskLevel, setRiskLevel] = useState<string>("low");
   const [loading, setLoading] = useState(true);
   const [zones, setZones] = useState<HeatZone[]>([]);
   const [fetchingZones, setFetchingZones] = useState(false);
@@ -96,22 +158,71 @@ export default function DashboardPage() {
   const fetchData = useCallback(async (city: City) => {
     setLoading(true);
     try {
-      const [iRes, eRes] = await Promise.all([
-        fetch("/api/intelligence", {
+      // Step 1: Get real temperature from heatmap
+      const heatData = await fetchHeatmapTemp(city);
+      const tempC = heatData?.tempC ?? 38;
+      const tempF = heatData?.tempF ?? cToF(tempC);
+      setTemperature(tempF);
+
+      // Step 2: Get environmental params
+      try {
+        const eRes = await fetch("/api/env-params", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
-        }),
-        fetch("/api/env-params", {
+          body: JSON.stringify({
+            latitude: city.latitude,
+            longitude: city.longitude,
+            temperature: tempC,
+          }),
+        });
+        const eData = await eRes.json();
+        const params = eData.result?.locations?.[0]?.parameters;
+        if (params) {
+          setEnv({
+            heat_index_celsius: params.heat_index_celsius ?? [],
+            apparent_temperature_celsius: params.apparent_temperature_celsius ?? [],
+            relative_humidity_percent: params.relative_humidity_percent ?? [],
+            wind_speed_kmh: params.wind_speed_kmh ?? [],
+            air_quality_aqi: params.air_quality_aqi ?? [],
+            precipitation_mm: params.precipitation_mm ?? [],
+            wet_bulb_temperature_celsius: params.wet_bulb_temperature_celsius ?? [],
+          });
+
+          const humidity = params.relative_humidity_percent?.[12] ?? 20;
+          const rs = computeRisk(tempC, humidity);
+          setRiskScore(rs);
+          setRiskLevel(rs >= 85 ? "critical" : rs >= 70 ? "extreme" : rs >= 50 ? "high" : rs >= 30 ? "medium" : "low");
+        }
+      } catch {
+        // Continue without env data
+      }
+
+      // Step 3: Hourly data from env params
+      setLoadingHourly(true);
+      try {
+        const eRes = await fetch("/api/env-params", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
-        }),
-      ]);
-      const iData = await iRes.json();
-      const eData = await eRes.json();
-      if (iData.result) setIntel(iData.result);
-      if (eData.result) setEnv(eData.result);
+          body: JSON.stringify({
+            latitude: city.latitude,
+            longitude: city.longitude,
+            temperature: tempC,
+          }),
+        });
+        const eData = await eRes.json();
+        const params = eData.result?.locations?.[0]?.parameters;
+        const heatIndexArr = params?.heat_index_celsius ?? [];
+        const hours = [6, 8, 10, 12, 14, 16, 18, 20];
+        const data: HourlyPoint[] = hours.map((h) => ({
+          hour: h,
+          temp: Math.round(cToF(heatIndexArr[h] ?? tempC)),
+        }));
+        setHourlyData(data);
+      } catch {
+        setHourlyData([]);
+      } finally {
+        setLoadingHourly(false);
+      }
     } catch (e) {
       console.error(e);
     } finally {
@@ -119,39 +230,16 @@ export default function DashboardPage() {
     }
   }, []);
 
-  const fetchHourly = useCallback(async (city: City) => {
-    setLoadingHourly(true);
-    try {
-      const iRes = await fetch("/api/intelligence", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
-      });
-      const iData = await iRes.json();
-      const baseTemp = iData.result?.temperature?.current ?? 95;
-      const hours = [6, 8, 10, 12, 14, 16, 18, 20];
-      const data: HourlyPoint[] = hours.map((h) => {
-        const factor = Math.sin(((h - 6) / 14) * Math.PI);
-        return { hour: h, temp: Math.round(baseTemp * (0.7 + factor * 0.35)) };
-      });
-      setHourlyData(data);
-    } catch {
-      setHourlyData([]);
-    } finally {
-      setLoadingHourly(false);
-    }
-  }, []);
-
-  // Fetch zone data SEQUENTIALLY to avoid rate limiting
+  // Fetch zone data SEQUENTIALLY
   const fetchZoneData = useCallback(async (cities: City[]) => {
     setFetchingZones(true);
     setZones([]);
     const results: HeatZone[] = [];
     for (const city of cities) {
-      const zone = await fetchCityData(city);
+      const zone = await fetchCityZone(city);
       if (zone) {
         results.push(zone);
-        setZones([...results]); // Update state after each city
+        setZones([...results]);
       }
     }
     setFetchingZones(false);
@@ -159,12 +247,20 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData(selectedCity);
-    fetchHourly(selectedCity);
     const otherCities = PRESET_CITIES.filter((c) => c.name !== selectedCity.name).slice(0, 4);
     fetchZoneData(otherCities);
-  }, [selectedCity, fetchData, fetchHourly, fetchZoneData]);
+  }, [selectedCity, fetchData, fetchZoneData]);
 
   const maxHourlyTemp = hourlyData.length > 0 ? Math.max(...hourlyData.map((d) => d.temp)) : 120;
+
+  // Current hour's env data
+  const currentHour = new Date().getHours();
+  const humidity = env?.relative_humidity_percent?.[currentHour] ?? 0;
+  const windSpeed = env?.wind_speed_kmh?.[currentHour] ?? 0;
+  const aqi = env?.air_quality_aqi?.[currentHour] ?? 0;
+  const heatIndexC = env?.heat_index_celsius?.[currentHour] ?? 0;
+  const apparentC = env?.apparent_temperature_celsius?.[currentHour] ?? 0;
+  const wetBulbC = env?.wet_bulb_temperature_celsius?.[currentHour] ?? 0;
 
   return (
     <div className="min-h-screen bg-[#09090B]">
@@ -189,30 +285,27 @@ export default function DashboardPage() {
         ) : (
           <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-4 sm:space-y-5 overflow-hidden">
-              <HeatMap city={selectedCity} temperature={intel?.temperature?.current} />
+              <HeatMap city={selectedCity} temperature={temperature} />
 
               <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-5 sm:p-6 md:p-8 overflow-hidden">
                 <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">
-                  {intel?.location?.city ?? selectedCity.name}, {selectedCity.state} — Current
+                  {selectedCity.name}, {selectedCity.state} — Current
                 </div>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 sm:gap-6">
-                  <div className="shrink-0"><TemperatureGauge temperature={intel?.temperature?.current ?? 0} size="md" /></div>
-                  {intel && (
-                    <div className="flex flex-col items-center gap-2 shrink-0">
-                      <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-lg sm:text-xl font-bold text-white font-mono">{intel.risk_score}</div>
-                      <span className="text-[9px] uppercase tracking-[0.12em] text-white/30">Risk Score</span>
-                    </div>
-                  )}
+                  <div className="shrink-0"><TemperatureGauge temperature={temperature} size="md" /></div>
+                  <div className="flex flex-col items-center gap-2 shrink-0">
+                    <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-lg sm:text-xl font-bold text-white font-mono">{riskScore}</div>
+                    <span className="text-[9px] uppercase tracking-[0.12em] text-white/30">Risk Score</span>
+                    <span className={`text-[10px] uppercase tracking-wider font-semibold ${riskLevel === "critical" || riskLevel === "extreme" ? "text-red-400" : riskLevel === "high" ? "text-amber-400" : riskLevel === "medium" ? "text-lime-400" : "text-blue-400"}`}>{riskLevel}</span>
+                  </div>
                 </div>
-                {intel?.temperature?.feels_like !== undefined && (
-                  <p className="mt-3 text-xs text-white/35">Feels like <span className="text-white/60 font-medium">{Math.round(intel.temperature.feels_like)}°F</span></p>
-                )}
+                <p className="mt-3 text-xs text-white/35">Feels like <span className="text-white/60 font-medium">{Math.round(cToF(heatIndexC))}°F</span></p>
               </div>
 
-              {/* Hourly Temperature Chart */}
+              {/* Hourly Temperature Chart — Real data from env_params */}
               <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 sm:p-5 md:p-6 overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30">Hourly Temperature</h3>
+                  <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30">Hourly Heat Index</h3>
                   {loadingHourly && <span className="text-[9px] text-white/20">Loading...</span>}
                 </div>
                 {hourlyData.length > 0 ? (
@@ -233,17 +326,18 @@ export default function DashboardPage() {
                 )}
               </div>
 
+              {/* Environmental Parameters — Real data */}
               {env && (
                 <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 sm:p-5 md:p-6 overflow-hidden">
                   <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">Environmental Parameters</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                     {[
-                      { l: "Heat Index", v: `${Math.round(env.heat_index)}°F` },
-                      { l: "Apparent", v: `${Math.round(env.apparent_temperature)}°F` },
-                      { l: "Wet Bulb", v: `${Math.round(env.wet_bulb_temperature)}°F` },
-                      { l: "Humidity", v: `${Math.round(env.humidity)}%` },
-                      { l: "Wind", v: `${Math.round(env.wind_speed)} mph` },
-                      { l: "UV", v: `${Math.round(env.uv_index)}` },
+                      { l: "Heat Index", v: `${Math.round(cToF(heatIndexC))}°F` },
+                      { l: "Apparent Temp", v: `${Math.round(cToF(apparentC))}°F` },
+                      { l: "Wet Bulb", v: `${Math.round(cToF(wetBulbC))}°F` },
+                      { l: "Humidity", v: `${Math.round(humidity)}%` },
+                      { l: "Wind", v: `${Math.round(windSpeed * 0.621)} mph` },
+                      { l: "AQI", v: `${Math.round(aqi)}` },
                     ].map((s) => (
                       <div key={s.l} className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-2.5 sm:p-3">
                         <div className="text-[8px] sm:text-[9px] text-white/25 uppercase tracking-wider">{s.l}</div>
@@ -254,19 +348,24 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {intel?.recommendations && intel.recommendations.length > 0 && (
-                <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 sm:p-5 md:p-6 overflow-hidden">
-                  <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">Safety Recommendations</h3>
-                  <ul className="space-y-2">
-                    {intel.recommendations.map((rec, i) => (
-                      <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-white/45">
-                        <span className="mt-0.5 h-4 w-4 sm:h-5 sm:w-5 shrink-0 rounded-full border border-white/10 bg-white/[0.02] text-center text-[9px] sm:text-[10px] leading-4 sm:leading-5 text-white/40 font-mono">{i + 1}</span>
-                        <span className="min-w-0">{rec}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              {/* Safety Recommendations */}
+              <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 sm:p-5 md:p-6 overflow-hidden">
+                <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">Safety Recommendations</h3>
+                <ul className="space-y-2">
+                  {[
+                    "Stay hydrated — drink water every 20 minutes",
+                    "Seek shade between 11 AM and 3 PM",
+                    "Wear light-colored, loose-fitting clothing",
+                    "Check on vulnerable neighbors and elderly",
+                    riskScore >= 70 ? "Avoid outdoor activities during peak hours" : "Limit prolonged outdoor exposure",
+                  ].map((rec, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-white/45">
+                      <span className="mt-0.5 h-4 w-4 sm:h-5 sm:w-5 shrink-0 rounded-full border border-white/10 bg-white/[0.02] text-center text-[9px] sm:text-[10px] leading-4 sm:leading-5 text-white/40 font-mono">{i + 1}</span>
+                      <span className="min-w-0">{rec}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             <div className="space-y-3 sm:space-y-4 overflow-hidden">
@@ -285,10 +384,10 @@ export default function DashboardPage() {
               </div>
               <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-3.5 sm:p-4 space-y-1.5">
                 <h4 className="text-[9px] sm:text-[10px] uppercase tracking-[0.12em] text-white/30 mb-1.5">Quick Actions</h4>
-                <a href="/routes" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">▸ Plan Cool Route</a>
-                <a href="/advisor" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">◈ Ask AI Advisor</a>
-                <a href="/audit" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">◉ Asset Heat Audit</a>
-                <a href="/twin" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">◎ Digital Twin</a>
+                <a href="/routes" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">Plan Cool Route</a>
+                <a href="/advisor" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">Ask AI Advisor</a>
+                <a href="/audit" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">Asset Heat Audit</a>
+                <a href="/twin" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">Digital Twin</a>
               </div>
             </div>
           </div>
