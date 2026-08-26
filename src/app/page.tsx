@@ -63,7 +63,7 @@ export default function Home() {
           <nav className="flex items-center justify-between px-6 md:px-10 lg:px-16 py-5 md:py-6 shrink-0">
             <Link href="/" className="flex items-center gap-2.5">
               <div className="relative h-7 w-7 overflow-hidden rounded-md bg-white p-[3px]">
-                <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" priority />
+                <Image src="/heatshield-logo.png" alt="" fill className="object-contain" priority />
               </div>
               <span className="text-white font-semibold text-lg tracking-tight">HeatShield</span>
             </Link>
@@ -282,7 +282,7 @@ export default function Home() {
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="relative h-5 w-5 overflow-hidden rounded bg-white p-[2px]">
-                <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" />
+                <Image src="/heatshield-logo.png" alt="" fill className="object-contain" />
               </div>
               <span className="text-xs font-semibold text-white">HeatShield</span>
             </div>
@@ -308,7 +308,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
               <div className="relative h-7 w-7 overflow-hidden rounded-md bg-white p-[3px]">
-                <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" />
+                <Image src="/heatshield-logo.png" alt="" fill className="object-contain" />
               </div>
               <span className="text-white font-semibold text-lg tracking-tight">HeatShield</span>
             </Link>

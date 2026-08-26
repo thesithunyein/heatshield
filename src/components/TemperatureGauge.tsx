@@ -12,11 +12,12 @@ interface Props {
 
 function getIntensity(temp: number): number {
   if (temp >= 120) return 1;
-  if (temp >= 110) return 0.85;
-  if (temp >= 100) return 0.7;
-  if (temp >= 90) return 0.55;
-  if (temp >= 80) return 0.4;
-  return 0.25;
+  if (temp >= 110) return 0.9;
+  if (temp >= 100) return 0.8;
+  if (temp >= 90) return 0.65;
+  if (temp >= 80) return 0.5;
+  if (temp >= 70) return 0.35;
+  return 0.2;
 }
 
 function getLabel(temp: number): string {
@@ -27,6 +28,11 @@ function getLabel(temp: number): string {
   if (temp >= 80) return "WARM";
   if (temp >= 70) return "MILD";
   return "COOL";
+}
+
+function getColor(temp: number): string {
+  const i = getIntensity(temp);
+  return `hsl(0, 0%, ${Math.round(35 + i * 65)}%)`;
 }
 
 export default function TemperatureGauge({ temperature, unit = "F", size = "lg", showLabel = true, animated = true }: Props) {
@@ -43,18 +49,19 @@ export default function TemperatureGauge({ temperature, unit = "F", size = "lg",
     requestAnimationFrame(tick);
   }, [temperature, animated]);
 
+  const color = getColor(temperature);
   const sizes = { sm: "text-2xl", md: "text-4xl", lg: "text-6xl", xl: "text-8xl" };
 
   return (
     <div className="flex flex-col items-center gap-2">
-      <span className={`font-mono font-bold tracking-tighter ${sizes[size]} text-[#111]`}>
-        {display}°<span className="text-[0.45em] text-[#9CA0A6]">{unit}</span>
+      <span className={`font-mono font-bold tracking-tighter ${sizes[size]}`} style={{ color }}>
+        {display}°<span className="text-[0.45em] text-white/25">{unit}</span>
       </span>
       {showLabel && (
         <div className="flex items-center gap-2">
-          <span className="h-px w-6 bg-[#E5E5EA]" />
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9CA0A6]">{getLabel(temperature)}</span>
-          <span className="h-px w-6 bg-[#E5E5EA]" />
+          <span className="h-px w-6" style={{ background: color }} />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color }}>{getLabel(temperature)}</span>
+          <span className="h-px w-6" style={{ background: color }} />
         </div>
       )}
     </div>

@@ -33,40 +33,40 @@ export default function AdvisorPage() {
   }
 
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen bg-[#09090B]">
       <Navbar />
       <div className="flex flex-1 flex-col pt-[80px]">
         <div className="flex-1 overflow-y-auto px-4 sm:px-6">
           <div className="max-w-3xl mx-auto py-6 space-y-5">
             {messages.map((m) => (
               <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 ${m.role === "user" ? "bg-[#111] text-white" : "bg-[#F5F5F7] border border-[#E5E5EA]"}`}>
+                <div className={`max-w-[85%] sm:max-w-[80%] rounded-2xl px-4 sm:px-5 py-3 sm:py-3.5 ${m.role === "user" ? "bg-white text-black" : "border border-white/[0.06] bg-white/[0.03]"}`}>
                   {m.role === "assistant" ? (
                     <div className="space-y-1.5">
                       {m.content.split("\n").map((l, i) => {
-                        if (l.startsWith("## ")) return <h2 key={i} className="font-bold text-[#111] text-base sm:text-lg mb-1">{l.replace("## ", "")}</h2>;
-                        if (l.startsWith("- ")) return <div key={i} className="flex gap-2 text-xs sm:text-sm text-[#6B6B70]"><span className="text-[#9CA0A6]">·</span><span>{l.replace("- ", "")}</span></div>;
+                        if (l.startsWith("## ")) return <h2 key={i} className="font-bold text-white text-base sm:text-lg mb-1">{l.replace("## ", "")}</h2>;
+                        if (l.startsWith("- ")) return <div key={i} className="flex gap-2 text-xs sm:text-sm text-white/50"><span className="text-white/20">·</span><span>{l.replace("- ", "")}</span></div>;
                         if (l.trim() === "") return <div key={i} className="h-1" />;
-                        return <p key={i} className="text-xs sm:text-sm text-[#6B6B70] leading-relaxed">{l}</p>;
+                        return <p key={i} className="text-xs sm:text-sm text-white/50 leading-relaxed">{l}</p>;
                       })}
                     </div>
                   ) : <p className="text-xs sm:text-sm leading-relaxed">{m.content}</p>}
                 </div>
               </div>
             ))}
-            {sending && <div className="flex justify-start"><div className="bg-[#F5F5F7] border border-[#E5E5EA] rounded-2xl px-5 py-3.5"><div className="flex gap-1.5"><span className="h-2 w-2 animate-bounce rounded-full bg-[#9CA0A6] [animation-delay:0ms]" /><span className="h-2 w-2 animate-bounce rounded-full bg-[#9CA0A6] [animation-delay:150ms]" /><span className="h-2 w-2 animate-bounce rounded-full bg-[#9CA0A6] [animation-delay:300ms]" /></div></div></div>}
+            {sending && <div className="flex justify-start"><div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl px-5 py-3.5"><div className="flex gap-1.5"><span className="h-2 w-2 animate-bounce rounded-full bg-white/50 [animation-delay:0ms]" /><span className="h-2 w-2 animate-bounce rounded-full bg-white/50 [animation-delay:150ms]" /><span className="h-2 w-2 animate-bounce rounded-full bg-white/50 [animation-delay:300ms]" /></div></div></div>}
             <div ref={endRef} />
           </div>
         </div>
         {messages.length <= 1 && (
           <div className="px-4 sm:px-6 pb-2"><div className="max-w-3xl mx-auto flex flex-wrap gap-2">
-            {QUICK.map((q) => <button key={q} onClick={() => send(q)} className="rounded-full border border-[#E5E5EA] bg-[#F5F5F7] px-3 py-1.5 text-[11px] sm:text-xs text-[#6B6B70] transition-colors hover:border-[#111] hover:text-[#111]">{q}</button>)}
+            {QUICK.map((q) => <button key={q} onClick={() => send(q)} className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-[11px] sm:text-xs text-white/35 transition-colors hover:border-white/20 hover:text-white/60">{q}</button>)}
           </div></div>
         )}
-        <div className="border-t border-[#E5E5EA] bg-white/80 backdrop-blur-xl px-4 sm:px-6 py-3 sm:py-4">
+        <div className="border-t border-white/[0.04] bg-[#09090B]/80 backdrop-blur-xl px-4 sm:px-6 py-3 sm:py-4">
           <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="max-w-3xl mx-auto flex items-center gap-3">
-            <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about heat safety..." className="flex-1 rounded-xl border border-[#E5E5EA] bg-[#F5F5F7] px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-[#111] placeholder-[#9CA0A6] outline-none focus:border-[#111] transition-colors min-w-0" disabled={sending} />
-            <button type="submit" disabled={!input.trim() || sending} className="shrink-0 rounded-xl bg-[#111] px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-white hover:bg-[#333] disabled:opacity-25 transition-colors">Send</button>
+            <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about heat safety..." className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-white/20 outline-none focus:border-white/20 transition-colors min-w-0" disabled={sending} />
+            <button type="submit" disabled={!input.trim() || sending} className="shrink-0 rounded-xl bg-white px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-black hover:bg-white/90 disabled:opacity-25 transition-colors">Send</button>
           </form>
         </div>
       </div>
