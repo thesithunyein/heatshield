@@ -18,9 +18,9 @@ const TICKER_ITEMS = [
 
 const FEATURES = [
   { num: "01", title: "Live Heat Maps", desc: "Interactive thermal visualization at 20m² resolution.", href: "/dashboard" },
-  { num: "02", title: "Risk Scoring", desc: "AI-driven composite risk from temperature, humidity, UV, wind.", href: "/dashboard" },
-  { num: "03", title: "Cool Routes", desc: "Navigate cities avoiding peak heat exposure.", href: "/routes" },
-  { num: "04", title: "AI Advisor", desc: "Real-time heat safety guidance, powered by FortyGuard data.", href: "/advisor" },
+  { num: "02", title: "Asset Heat Audit", desc: "Audit parks, hospitals, schools for heat risk.", href: "/audit" },
+  { num: "03", title: "Digital Twin", desc: "Simulate heat evolution across a full day.", href: "/twin" },
+  { num: "04", title: "Cool Routes", desc: "Navigate cities using real temperature data.", href: "/routes" },
 ];
 
 export default function Home() {
@@ -68,10 +68,12 @@ export default function Home() {
               <span className="text-white font-semibold text-lg tracking-tight">HeatShield</span>
             </Link>
 
-            <div className="hidden md:flex items-center gap-7">
+            <div className="hidden md:flex items-center gap-6">
               <Link href="/dashboard" className="text-white/60 hover:text-white text-sm font-light transition-colors">Dashboard</Link>
-              <Link href="/routes" className="text-white/60 hover:text-white text-sm font-light transition-colors">Cool Routes</Link>
-              <Link href="/advisor" className="text-white/60 hover:text-white text-sm font-light transition-colors">AI Advisor</Link>
+              <Link href="/audit" className="text-white/60 hover:text-white text-sm font-light transition-colors">Audit</Link>
+              <Link href="/twin" className="text-white/60 hover:text-white text-sm font-light transition-colors">Twin</Link>
+              <Link href="/routes" className="text-white/60 hover:text-white text-sm font-light transition-colors">Routes</Link>
+              <Link href="/advisor" className="text-white/60 hover:text-white text-sm font-light transition-colors">Advisor</Link>
             </div>
 
             <div className="flex items-center gap-3">
@@ -280,8 +282,8 @@ export default function Home() {
               <h4 className="text-sm font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2.5">
                 <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Dashboard</Link></li>
-                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Heat Maps</Link></li>
-                <li><Link href="/dashboard" className="text-sm text-white/50 hover:text-white transition-colors">Risk Scoring</Link></li>
+                <li><Link href="/audit" className="text-sm text-white/50 hover:text-white transition-colors">Asset Audit</Link></li>
+                <li><Link href="/twin" className="text-sm text-white/50 hover:text-white transition-colors">Digital Twin</Link></li>
                 <li><Link href="/routes" className="text-sm text-white/50 hover:text-white transition-colors">Cool Routes</Link></li>
                 <li><Link href="/advisor" className="text-sm text-white/50 hover:text-white transition-colors">AI Advisor</Link></li>
                 <li><a href="https://docs-api.fortyguard.com" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">API Docs</a></li>
@@ -376,8 +378,8 @@ export default function Home() {
 
           <div className="flex-1 flex flex-col items-center justify-center">
             <div className="flex flex-col items-center w-full max-w-sm">
-              {["Dashboard", "Cool Routes", "AI Advisor", "Live Demo"].map((label, i) => (
-                <Link key={label} href={i < 3 ? ["/dashboard", "/routes", "/advisor"][i] : "/dashboard"} onClick={() => setMenuOpen(false)}
+              {["Dashboard", "Asset Audit", "Digital Twin", "Cool Routes", "AI Advisor"].map((label, i) => (
+                <Link key={label} href={["/dashboard", "/audit", "/twin", "/routes", "/advisor"][i]} onClick={() => setMenuOpen(false)}
                   className={`w-full text-center text-4xl sm:text-5xl font-bold text-white border-b border-white/10 py-4 transition-all duration-300 hover:pl-4 ${menuOpen ? `animate-fade-in-up animate-delay-${(i + 1) * 100}` : "opacity-0"}`}
                 >{label}</Link>
               ))}

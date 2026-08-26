@@ -14,10 +14,12 @@ export default function Navbar({ dark = false }: { dark?: boolean }) {
           <span className="text-white font-semibold text-base sm:text-lg tracking-tight">HeatShield</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden md:flex items-center gap-5">
           <Link href="/dashboard" className="text-white/60 hover:text-white text-sm font-light transition-colors">Dashboard</Link>
-          <Link href="/routes" className="text-white/60 hover:text-white text-sm font-light transition-colors">Cool Routes</Link>
-          <Link href="/advisor" className="text-white/60 hover:text-white text-sm font-light transition-colors">AI Advisor</Link>
+          <Link href="/audit" className="text-white/60 hover:text-white text-sm font-light transition-colors">Audit</Link>
+          <Link href="/twin" className="text-white/60 hover:text-white text-sm font-light transition-colors">Twin</Link>
+          <Link href="/routes" className="text-white/60 hover:text-white text-sm font-light transition-colors">Routes</Link>
+          <Link href="/advisor" className="text-white/60 hover:text-white text-sm font-light transition-colors">Advisor</Link>
         </div>
 
         <div className="flex items-center gap-3">

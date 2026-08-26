@@ -25,7 +25,25 @@ export default function AdvisorPage() {
     setMessages((p) => [...p, { id: `u-${Date.now()}`, role: "user", content: text.trim(), timestamp: new Date().toISOString() }]);
     setInput(""); setSending(true);
     try {
-      const r = await fetch("/api/advisor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text.trim(), context: { city: PRESET_CITIES[0].name, temperature: 105, riskLevel: "extreme" } }) });
+      // Fetch real temperature data for context
+      let context = { city: PRESET_CITIES[0].name, temperature: 95, riskLevel: "medium" };
+      try {
+        const [iRes, eRes] = await Promise.all([
+          fetch("/api/intelligence", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ latitude: PRESET_CITIES[0].latitude, longitude: PRESET_CITIES[0].longitude }) }),
+          fetch("/api/env-params", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ latitude: PRESET_CITIES[0].latitude, longitude: PRESET_CITIES[0].longitude }) }),
+        ]);
+        const iData = await iRes.json();
+        const eData = await eRes.json();
+        if (iData.result) {
+          context = {
+            city: PRESET_CITIES[0].name,
+            temperature: iData.result.temperature?.current ?? 95,
+            riskLevel: iData.result.risk_level ?? "medium",
+          };
+        }
+      } catch { /* use fallback context */ }
+
+      const r = await fetch("/api/advisor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text.trim(), context }) });
       const d = await r.json();
       setMessages((p) => [...p, { id: `a-${Date.now()}`, role: "assistant", content: d.response || "No response.", timestamp: new Date().toISOString() }]);
     } catch { setMessages((p) => [...p, { id: `e-${Date.now()}`, role: "assistant", content: "Connection error.", timestamp: new Date().toISOString() }]); }

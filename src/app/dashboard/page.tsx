@@ -16,6 +16,7 @@ interface IntelData {
   risk_level: string;
   risk_score: number;
   recommendations: string[];
+  location?: { city?: string; country?: string };
 }
 
 interface EnvData {
@@ -33,29 +34,88 @@ export default function DashboardPage() {
   const [env, setEnv] = useState<EnvData | null>(null);
   const [loading, setLoading] = useState(true);
   const [zones, setZones] = useState<HeatZone[]>([]);
+  const [fetchingZones, setFetchingZones] = useState(false);
 
   const fetchData = useCallback(async (city: City) => {
     setLoading(true);
     try {
       const [iRes, eRes] = await Promise.all([
-        fetch("/api/intelligence", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }) }),
-        fetch("/api/env-params", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }) }),
+        fetch("/api/intelligence", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
+        }),
+        fetch("/api/env-params", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
+        }),
       ]);
       const iData = await iRes.json();
       const eData = await eRes.json();
       if (iData.result) setIntel(iData.result);
       if (eData.result) setEnv(eData.result);
-      setZones(PRESET_CITIES.filter((c) => c.name !== city.name).slice(0, 4).map((c, i) => ({
-        id: `z-${i}`, name: `${c.name} Center`, city: c.name, latitude: c.latitude, longitude: c.longitude,
-        temperature: 80 + Math.round(Math.random() * 35),
-        riskLevel: (["low", "medium", "high", "extreme"] as const)[Math.floor(Math.random() * 4)],
-        riskScore: Math.round(20 + Math.random() * 70), heatIndex: 85 + Math.round(Math.random() * 30),
-        lastUpdated: new Date(Date.now() - Math.random() * 3600000).toISOString(),
-      })));
-    } catch (e) { console.error(e); } finally { setLoading(false); }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { fetchData(selectedCity); }, [selectedCity, fetchData]);
+  // Fetch real data for other cities (monitored zones)
+  const fetchZoneData = useCallback(async (cities: City[]) => {
+    setFetchingZones(true);
+    try {
+      const results = await Promise.all(
+        cities.map(async (c) => {
+          try {
+            const [iRes, eRes] = await Promise.all([
+              fetch("/api/intelligence", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ latitude: c.latitude, longitude: c.longitude }),
+              }),
+              fetch("/api/env-params", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ latitude: c.latitude, longitude: c.longitude }),
+              }),
+            ]);
+            const iData = await iRes.json();
+            const eData = await eRes.json();
+            const intel = iData.result;
+            const envData = eData.result;
+            return {
+              id: `z-${c.name}`,
+              name: `${c.name} Center`,
+              city: c.name,
+              latitude: c.latitude,
+              longitude: c.longitude,
+              temperature: intel?.temperature?.current ?? 0,
+              riskLevel: (intel?.risk_level ?? "low") as HeatZone["riskLevel"],
+              riskScore: intel?.risk_score ?? 0,
+              heatIndex: envData?.heat_index ?? intel?.temperature?.feels_like ?? 0,
+              lastUpdated: new Date().toISOString(),
+            };
+          } catch {
+            return null;
+          }
+        })
+      );
+      setZones(results.filter((z): z is HeatZone => z !== null));
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setFetchingZones(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData(selectedCity);
+    // Fetch zones for other cities
+    const otherCities = PRESET_CITIES.filter((c) => c.name !== selectedCity.name).slice(0, 4);
+    fetchZoneData(otherCities);
+  }, [selectedCity, fetchData, fetchZoneData]);
 
   return (
     <div className="min-h-screen bg-[#09090B]">
@@ -72,7 +132,7 @@ export default function DashboardPage() {
         {loading ? (
           <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-4 sm:space-y-5">
-              <div className="bg-white/[0.03] h-72 animate-shimmer rounded-2xl" />
+              <div className="bg-white/[0.03] h-64 sm:h-72 animate-shimmer rounded-2xl" />
               <div className="bg-white/[0.03] h-40 animate-shimmer rounded-2xl" />
             </div>
             <div className="space-y-4 sm:space-y-5">{[1, 2, 3].map((i) => <div key={i} className="bg-white/[0.03] h-36 animate-shimmer rounded-2xl" />)}</div>
@@ -83,9 +143,11 @@ export default function DashboardPage() {
               <HeatMap city={selectedCity} temperature={intel?.temperature?.current} />
 
               <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-5 sm:p-6 md:p-8 overflow-hidden">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">{selectedCity.name}, {selectedCity.country} — Current</div>
+                <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">
+                  {intel?.location?.city ?? selectedCity.name}, {intel?.location?.country ?? selectedCity.country} — Current
+                </div>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 sm:gap-6">
-                  <div className="shrink-0"><TemperatureGauge temperature={intel?.temperature?.current ?? 100} size="md" /></div>
+                  <div className="shrink-0"><TemperatureGauge temperature={intel?.temperature?.current ?? 0} size="md" /></div>
                   {intel && (
                     <div className="flex flex-col items-center gap-2 shrink-0">
                       <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-lg sm:text-xl font-bold text-white font-mono">{intel.risk_score}</div>
@@ -135,7 +197,9 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3 sm:space-y-4 overflow-hidden">
-              <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30">Monitored Zones</h3>
+              <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30">
+                {fetchingZones ? "Loading zones..." : "Monitored Zones"}
+              </h3>
               <div className="space-y-2.5 sm:space-y-3">
                 {zones.map((z) => (
                   <RiskCard key={z.id} name={z.name} city={z.city} temperature={z.temperature} riskLevel={z.riskLevel} riskScore={z.riskScore} heatIndex={z.heatIndex} lastUpdated={new Date(z.lastUpdated).toLocaleTimeString()} />
@@ -145,6 +209,8 @@ export default function DashboardPage() {
                 <h4 className="text-[9px] sm:text-[10px] uppercase tracking-[0.12em] text-white/30 mb-1.5">Quick Actions</h4>
                 <a href="/routes" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">▸ Plan Cool Route</a>
                 <a href="/advisor" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">◈ Ask AI Advisor</a>
+                <a href="/audit" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">◉ Asset Heat Audit</a>
+                <a href="/twin" className="block rounded-lg bg-white/[0.02] border border-white/[0.04] px-3 py-2.5 text-[11px] sm:text-xs text-white/35 transition-all hover:text-white/70 hover:bg-white/[0.04]">◎ Digital Twin</a>
               </div>
             </div>
           </div>
