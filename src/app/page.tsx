@@ -97,7 +97,7 @@ export default function Home() {
             </p>
 
             {/* Big heading */}
-            <h1 className="font-bold text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5rem] leading-[1.08] max-w-4xl tracking-tight">
+            <h1 className="font-bold text-white text-[2rem] sm:text-5xl md:text-6xl lg:text-7xl xl:text-[5rem] leading-[1.08] max-w-4xl tracking-tight">
               See Heat. Stop Heat.<br />
               <span className="text-white/40">Save Cities.</span>
             </h1>
@@ -263,7 +263,7 @@ export default function Home() {
                         <svg className="w-4 h-4 text-[#111]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                       </div>
                     </summary>
-                    <p className="text-sm text-[#6B6B70] font-light leading-relaxed ml-10 sm:ml-12 pr-12 pb-5 sm:pb-6">{faq.a}</p>
+                    <p className="text-xs sm:text-sm text-[#6B6B70] font-light leading-relaxed ml-8 sm:ml-12 pr-4 sm:pr-12 pb-5 sm:pb-6">{faq.a}</p>
                   </details>
                 );
               })}
@@ -275,7 +275,7 @@ export default function Home() {
       {/* ═══ FOOTER — Dark ═══ */}
       <footer className="bg-[#111] px-6 md:px-10 lg:px-16">
         <div className="max-w-6xl mx-auto py-12 md:py-16">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-6 lg:gap-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-6 lg:gap-10">
             <div>
               <h4 className="text-sm font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2.5">
@@ -318,7 +318,7 @@ export default function Home() {
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
                 </button>
               </div>
-              <p className="text-[10px] text-white/25 mt-3 leading-relaxed">By signing up, you agree to our Privacy Policy. We respect your data.</p>
+              <p className="text-[10px] text-white/25 mt-3 leading-relaxed hidden sm:block">By signing up, you agree to our Privacy Policy. We respect your data.</p>
               <div className="mt-6">
                 <p className="text-xs font-semibold text-white mb-3">Follow us on:</p>
                 <div className="flex gap-2">

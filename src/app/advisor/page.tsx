@@ -59,11 +59,11 @@ export default function AdvisorPage() {
           </div>
         </div>
         {messages.length <= 1 && (
-          <div className="px-4 sm:px-6 pb-2"><div className="max-w-3xl mx-auto flex flex-wrap gap-2">
-            {QUICK.map((q) => <button key={q} onClick={() => send(q)} className="rounded-full border border-white/[0.08] bg-white/[0.02] px-3 py-1.5 text-[11px] sm:text-xs text-white/35 transition-colors hover:border-white/20 hover:text-white/60">{q}</button>)}
+          <div className="px-4 sm:px-6 pb-2"><div className="max-w-3xl mx-auto flex flex-wrap gap-1.5 sm:gap-2">
+            {QUICK.map((q) => <button key={q} onClick={() => send(q)} className="rounded-full border border-white/[0.08] bg-white/[0.02] px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs text-white/35 transition-colors hover:border-white/20 hover:text-white/60">{q}</button>)}
           </div></div>
         )}
-        <div className="border-t border-white/[0.04] bg-[#09090B]/80 backdrop-blur-xl px-4 sm:px-6 py-3 sm:py-4">
+        <div className="border-t border-white/[0.04] bg-[#09090B]/80 backdrop-blur-xl px-4 sm:px-6 py-3 sm:py-4 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <form onSubmit={(e) => { e.preventDefault(); send(input); }} className="max-w-3xl mx-auto flex items-center gap-3">
             <input type="text" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Ask about heat safety..." className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.02] px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-white/20 outline-none focus:border-white/20 transition-colors min-w-0" disabled={sending} />
             <button type="submit" disabled={!input.trim() || sending} className="shrink-0 rounded-xl bg-white px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-black hover:bg-white/90 disabled:opacity-25 transition-colors">Send</button>

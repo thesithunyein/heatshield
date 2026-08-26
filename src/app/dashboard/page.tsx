@@ -85,7 +85,7 @@ export default function DashboardPage() {
               <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-5 sm:p-6 md:p-8 overflow-hidden">
                 <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">{selectedCity.name}, {selectedCity.country} — Current</div>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between gap-4 sm:gap-6">
-                  <div className="shrink-0"><TemperatureGauge temperature={intel?.temperature?.current ?? 100} size="lg" /></div>
+                  <div className="shrink-0"><TemperatureGauge temperature={intel?.temperature?.current ?? 100} size="md" /></div>
                   {intel && (
                     <div className="flex flex-col items-center gap-2 shrink-0">
                       <div className="flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-lg sm:text-xl font-bold text-white font-mono">{intel.risk_score}</div>
@@ -101,7 +101,7 @@ export default function DashboardPage() {
               {env && (
                 <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 sm:p-5 md:p-6 overflow-hidden">
                   <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">Environmental Parameters</h3>
-                  <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                     {[
                       { l: "Heat Index", v: `${Math.round(env.heat_index)}°F` },
                       { l: "Apparent", v: `${Math.round(env.apparent_temperature)}°F` },

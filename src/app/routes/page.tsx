@@ -34,7 +34,7 @@ export default function RoutesPage() {
         </div>
 
         <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl mb-6 sm:mb-8 p-4 sm:p-5 md:p-6 overflow-hidden">
-          <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end">
+          <div className="flex flex-col gap-3">
             <div className="flex-1 min-w-0">
               <label className="mb-1 block text-[8px] sm:text-[9px] uppercase tracking-[0.12em] text-white/25">City</label>
               <CitySelector selectedCity={selectedCity} onSelect={setSelectedCity} />
@@ -47,7 +47,7 @@ export default function RoutesPage() {
               <label className="mb-1 block text-[8px] sm:text-[9px] uppercase tracking-[0.12em] text-white/25">To</label>
               <input type="text" defaultValue="Riverside Park" className="w-full rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-white placeholder-white/15 outline-none focus:border-white/20 transition-colors" />
             </div>
-            <button onClick={search} disabled={searching} className="shrink-0 rounded-lg bg-white px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-black hover:bg-white/90 disabled:opacity-30 transition-colors">
+            <button onClick={search} disabled={searching} className="w-full sm:w-auto shrink-0 rounded-lg bg-white px-4 sm:px-5 py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-black hover:bg-white/90 disabled:opacity-30 transition-colors">
               {searching ? <span className="flex items-center gap-2"><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-black/20 border-t-black" />Scanning...</span> : "Find Routes"}
             </button>
           </div>
@@ -73,7 +73,7 @@ export default function RoutesPage() {
                         <div><div className="text-[8px] sm:text-[9px] text-white/20 uppercase tracking-wider">Shade</div><div className="font-mono text-sm sm:text-base font-bold text-white">{r.shade}%</div></div>
                       </div>
                     </div>
-                    <div className="sm:w-48 shrink-0"><ul className="space-y-0.5">{r.tips.map((t, j) => <li key={j} className="text-[9px] sm:text-[10px] text-white/25">{t}</li>)}</ul></div>
+                    <div className="hidden sm:block sm:w-48 shrink-0"><ul className="space-y-0.5">{r.tips.map((t, j) => <li key={j} className="text-[9px] sm:text-[10px] text-white/25">{t}</li>)}</ul></div>
                   </div>
                 </div>
               );
