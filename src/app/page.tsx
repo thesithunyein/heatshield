@@ -13,25 +13,25 @@ const STATS = [
 
 const FEATURES = [
   {
-    icon: "🗺️",
+    icon: "◼",
     title: "Live Heat Maps",
     desc: "Interactive thermal visualization of urban temperatures at 20m² resolution.",
     href: "/dashboard",
   },
   {
-    icon: "🛡️",
+    icon: "◻",
     title: "Risk Scoring",
     desc: "AI-driven composite risk scores combining temperature, humidity, UV, and wind.",
     href: "/dashboard",
   },
   {
-    icon: "🚶",
+    icon: "▸",
     title: "Cool Route Planner",
     desc: "Navigate cities avoiding peak heat — find the coolest path between any two points.",
     href: "/routes",
   },
   {
-    icon: "🤖",
+    icon: "◈",
     title: "AI Heat Advisor",
     desc: "Ask questions about heat safety, get real-time recommendations powered by FortyGuard data.",
     href: "/advisor",
@@ -58,13 +58,13 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* ── Nav ─────────────────────────────────── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--hs-border-subtle)] bg-[rgba(10,10,11,0.85)] backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--hs-border-subtle)] bg-[rgba(9,9,11,0.85)] backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="relative h-8 w-8 overflow-hidden rounded-lg bg-white p-0.5">
+            <div className="relative h-8 w-8 overflow-hidden rounded-lg bg-white p-1">
               <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" priority />
             </div>
-            <span className="text-lg font-semibold tracking-tight">HeatShield</span>
+            <span className="text-lg font-semibold tracking-tight text-white">HeatShield</span>
           </div>
           <div className="hidden items-center gap-1 md:flex">
             <NavLink href="/dashboard">Dashboard</NavLink>
@@ -73,7 +73,7 @@ export default function Home() {
           </div>
           <Link
             href="/dashboard"
-            className="rounded-full bg-[var(--hs-accent)] px-5 py-2 text-sm font-medium text-white transition-all hover:opacity-90 hover:shadow-[0_0_24px_rgba(249,115,22,0.3)]"
+            className="rounded-full bg-white px-5 py-2 text-sm font-medium text-black transition-all hover:bg-[#E4E4E7]"
           >
             Open Dashboard
           </Link>
@@ -82,30 +82,22 @@ export default function Home() {
 
       {/* ── Hero ────────────────────────────────── */}
       <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-16">
-        {/* Background radial glow */}
+        {/* Subtle white radial glow */}
         <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-1/2 left-1/2 h-[800px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(249,115,22,0.08)_0%,transparent_70%)]" />
-          <div className="absolute top-1/3 left-1/4 h-[400px] w-[400px] rounded-full bg-[radial-gradient(circle,rgba(239,68,68,0.04)_0%,transparent_70%)]" />
+          <div className="absolute top-1/2 left-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.04)_0%,transparent_70%)]" />
         </div>
 
         {/* Badge */}
         <div className="relative mb-8 inline-flex items-center gap-2 rounded-full border border-[var(--hs-border)] bg-[var(--hs-bg-card)] px-4 py-1.5 text-xs text-[var(--hs-text-secondary)]">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--hs-heat-hot)]" />
+          <span className="h-1.5 w-1.5 animate-pulse-dot rounded-full bg-white" />
           FortyGuard Hackathon&apos;26 · Track 01 — Resilient Cities
-        </div>
-
-        {/* Logo */}
-        <div className="relative mb-10 h-24 w-24 animate-float">
-          <div className="absolute inset-0 rounded-2xl bg-white p-2 shadow-[0_0_60px_rgba(249,115,22,0.15)]">
-            <Image src="/heatshield-logo.svg" alt="HeatShield" fill className="object-contain p-2" priority />
-          </div>
         </div>
 
         {/* Headline */}
         <h1 className="relative mb-4 text-center text-5xl font-bold tracking-tight sm:text-7xl lg:text-8xl">
-          <span className="block text-[var(--hs-text-primary)]">See Heat.</span>
-          <span className="block text-[var(--hs-text-primary)]">Stop Heat.</span>
-          <span className="hs-gradient-heat-text block">Save Cities.</span>
+          <span className="block text-white">See Heat.</span>
+          <span className="block text-white">Stop Heat.</span>
+          <span className="block text-[var(--hs-text-muted)]">Save Cities.</span>
         </h1>
 
         {/* Sub */}
@@ -121,7 +113,7 @@ export default function Home() {
             <div className="text-xs font-semibold uppercase tracking-widest text-[var(--hs-text-muted)]">
               Phoenix, AZ — Live
             </div>
-            <div className="font-mono text-5xl font-bold text-[var(--hs-heat-critical)]">
+            <div className="font-mono text-5xl font-bold text-white">
               {heroTemp}°
               <span className="text-lg text-[var(--hs-text-muted)]">F</span>
             </div>
@@ -129,19 +121,19 @@ export default function Home() {
           <div className="h-16 w-px bg-[var(--hs-border)]" />
           <div className="space-y-1 text-sm">
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[var(--hs-heat-critical)]" />
+              <span className="h-2 w-2 rounded-full bg-white" />
               <span className="text-[var(--hs-text-secondary)]">Risk Level:</span>
-              <span className="font-semibold text-[var(--hs-heat-critical)]">EXTREME</span>
+              <span className="font-semibold text-white">EXTREME</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[var(--hs-heat-hot)]" />
+              <span className="h-2 w-2 rounded-full bg-[var(--hs-text-secondary)]" />
               <span className="text-[var(--hs-text-secondary)]">Heat Index:</span>
-              <span className="font-semibold text-[var(--hs-heat-hot)]">118°F</span>
+              <span className="font-semibold text-[var(--hs-text-primary)]">118°F</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-[var(--hs-heat-warm)]" />
+              <span className="h-2 w-2 rounded-full bg-[var(--hs-text-muted)]" />
               <span className="text-[var(--hs-text-secondary)]">UV Index:</span>
-              <span className="font-semibold text-[var(--hs-heat-warm)]">11</span>
+              <span className="font-semibold text-[var(--hs-text-primary)]">11</span>
             </div>
           </div>
         </div>
@@ -150,13 +142,13 @@ export default function Home() {
         <div className="relative flex flex-col gap-4 sm:flex-row">
           <Link
             href="/dashboard"
-            className="rounded-full bg-[var(--hs-accent)] px-8 py-3 text-sm font-semibold text-white transition-all hover:shadow-[0_0_32px_rgba(249,115,22,0.4)]"
+            className="rounded-full bg-white px-8 py-3 text-sm font-semibold text-black transition-all hover:bg-[#E4E4E7]"
           >
             Launch Dashboard →
           </Link>
           <Link
             href="/advisor"
-            className="rounded-full border border-[var(--hs-border)] bg-[var(--hs-bg-card)] px-8 py-3 text-sm font-semibold text-[var(--hs-text-secondary)] transition-all hover:border-[var(--hs-text-muted)] hover:text-[var(--hs-text-primary)]"
+            className="rounded-full border border-[var(--hs-border)] bg-[var(--hs-bg-card)] px-8 py-3 text-sm font-semibold text-[var(--hs-text-secondary)] transition-all hover:border-[var(--hs-text-muted)] hover:text-white"
           >
             Ask AI Advisor
           </Link>
@@ -175,7 +167,7 @@ export default function Home() {
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-px md:grid-cols-4">
           {STATS.map((stat) => (
             <div key={stat.label} className="flex flex-col items-center gap-1 px-6 py-8">
-              <span className="font-mono text-2xl font-bold text-[var(--hs-accent)]">
+              <span className="font-mono text-2xl font-bold text-white">
                 {stat.value}
               </span>
               <span className="text-xs text-[var(--hs-text-muted)]">{stat.label}</span>
@@ -201,14 +193,14 @@ export default function Home() {
               href={f.href}
               className={`hs-glass-card group p-8 transition-all duration-300 hover:scale-[1.02] animate-fade-in-up animate-delay-${(i + 1) * 100}`}
             >
-              <div className="mb-4 text-4xl">{f.icon}</div>
-              <h3 className="mb-2 text-xl font-semibold text-[var(--hs-text-primary)]">
+              <div className="mb-4 text-3xl text-white">{f.icon}</div>
+              <h3 className="mb-2 text-xl font-semibold text-white">
                 {f.title}
               </h3>
               <p className="text-sm leading-relaxed text-[var(--hs-text-secondary)]">
                 {f.desc}
               </p>
-              <div className="mt-4 text-sm font-medium text-[var(--hs-accent)] opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="mt-4 text-sm font-medium text-[var(--hs-text-muted)] opacity-0 transition-opacity group-hover:opacity-100">
                 Explore →
               </div>
             </Link>
@@ -246,13 +238,13 @@ export default function Home() {
             <div className="relative h-6 w-6 overflow-hidden rounded bg-white p-0.5">
               <Image src="/heatshield-logo.svg" alt="" fill className="object-contain" />
             </div>
-            <span className="text-sm font-semibold">HeatShield</span>
+            <span className="text-sm font-semibold text-white">HeatShield</span>
           </div>
           <p className="text-xs text-[var(--hs-text-muted)]">
             Built for FortyGuard Hackathon&apos;26 · Powered by FortyGuard Temperature API
           </p>
           <p className="text-xs text-[var(--hs-text-muted)]">
-            © 2026 HeatShield. Made with ☀️ for climate resilience.
+            © 2026 HeatShield.
           </p>
         </div>
       </footer>
@@ -264,7 +256,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="rounded-lg px-3 py-2 text-sm text-[var(--hs-text-secondary)] transition-colors hover:bg-[var(--hs-bg-card)] hover:text-[var(--hs-text-primary)]"
+      className="rounded-lg px-3 py-2 text-sm text-[var(--hs-text-secondary)] transition-colors hover:bg-[var(--hs-bg-card)] hover:text-white"
     >
       {children}
     </Link>

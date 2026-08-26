@@ -1,7 +1,5 @@
 "use client";
 
-import { getRiskColor, getRiskBgColor, getRiskEmoji, formatTemperature } from "@/lib/utils";
-
 interface RiskCardProps {
   name: string;
   city: string;
@@ -10,6 +8,28 @@ interface RiskCardProps {
   riskScore: number;
   heatIndex?: number;
   lastUpdated?: string;
+}
+
+function getRiskColor(level: string): string {
+  switch (level) {
+    case "low": return "#71717A";
+    case "medium": return "#A1A1AA";
+    case "high": return "#D4D4D8";
+    case "extreme": return "#E4E4E7";
+    case "critical": return "#FAFAFA";
+    default: return "#52525B";
+  }
+}
+
+function getRiskEmoji(level: string): string {
+  switch (level) {
+    case "low": return "◻";
+    case "medium": return "◻";
+    case "high": return "◼";
+    case "extreme": return "◼";
+    case "critical": return "◼";
+    default: return "◻";
+  }
 }
 
 export default function RiskCard({
@@ -22,13 +42,12 @@ export default function RiskCard({
   lastUpdated,
 }: RiskCardProps) {
   const color = getRiskColor(riskLevel);
-  const bgColor = getRiskBgColor(riskLevel);
-  const emoji = getRiskEmoji(riskLevel);
+  const symbol = getRiskEmoji(riskLevel);
 
   return (
     <div
       className="hs-glass-card group relative overflow-hidden p-5 transition-all duration-300 hover:scale-[1.02]"
-      style={{ borderColor: `${color}20` }}
+      style={{ borderColor: `${color}15` }}
     >
       {/* Top accent line */}
       <div
@@ -36,31 +55,25 @@ export default function RiskCard({
         style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
       />
 
-      {/* Header */}
       <div className="mb-3 flex items-start justify-between">
         <div>
-          <h3 className="font-semibold text-[var(--hs-text-primary)]">{name}</h3>
+          <h3 className="font-semibold text-white">{name}</h3>
           <p className="text-xs text-[var(--hs-text-muted)]">{city}</p>
         </div>
-        <span className="text-lg">{emoji}</span>
+        <span className="text-lg" style={{ color }}>{symbol}</span>
       </div>
 
-      {/* Temperature */}
       <div className="mb-3">
-        <span
-          className="font-mono text-3xl font-bold"
-          style={{ color }}
-        >
-          {formatTemperature(temperature)}
+        <span className="font-mono text-3xl font-bold" style={{ color }}>
+          {Math.round(temperature)}°F
         </span>
         {heatIndex !== undefined && (
           <span className="ml-2 text-xs text-[var(--hs-text-muted)]">
-            feels like {formatTemperature(heatIndex)}
+            feels like {Math.round(heatIndex)}°F
           </span>
         )}
       </div>
 
-      {/* Risk Score Bar */}
       <div className="mb-3">
         <div className="mb-1 flex items-center justify-between text-xs">
           <span className="text-[var(--hs-text-secondary)]">Risk Score</span>
@@ -73,24 +86,21 @@ export default function RiskCard({
             className="h-full rounded-full transition-all duration-1000 ease-out"
             style={{
               width: `${riskScore}%`,
-              background: `linear-gradient(90deg, var(--hs-heat-cool), ${color})`,
+              background: `linear-gradient(90deg, #3F3F46, ${color})`,
             }}
           />
         </div>
       </div>
 
-      {/* Risk Level Badge */}
       <div className="flex items-center justify-between">
         <span
-          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wider"
-          style={{ background: bgColor, color }}
+          className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wider"
+          style={{ background: `${color}10`, color }}
         >
           {riskLevel}
         </span>
         {lastUpdated && (
-          <span className="text-[10px] text-[var(--hs-text-muted)]">
-            {lastUpdated}
-          </span>
+          <span className="text-[10px] text-[var(--hs-text-muted)]">{lastUpdated}</span>
         )}
       </div>
     </div>

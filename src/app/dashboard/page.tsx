@@ -7,7 +7,6 @@ import TemperatureGauge from "@/components/TemperatureGauge";
 import RiskCard from "@/components/RiskCard";
 import type { City, HeatZone } from "@/lib/types";
 import { PRESET_CITIES } from "@/lib/types";
-import { formatTemperature, timeAgo } from "@/lib/utils";
 
 interface IntelData {
   temperature: { current: number; feels_like: number; unit: string };
@@ -41,18 +40,12 @@ export default function DashboardPage() {
         fetch("/api/intelligence", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            latitude: city.latitude,
-            longitude: city.longitude,
-          }),
+          body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
         }),
         fetch("/api/env-params", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            latitude: city.latitude,
-            longitude: city.longitude,
-          }),
+          body: JSON.stringify({ latitude: city.latitude, longitude: city.longitude }),
         }),
       ]);
 
@@ -62,7 +55,6 @@ export default function DashboardPage() {
       if (intelData.result) setIntel(intelData.result);
       if (envData.result) setEnv(envData.result);
 
-      // Generate neighbor zones from nearby cities
       const zones: HeatZone[] = PRESET_CITIES.filter((c) => c.name !== city.name)
         .slice(0, 4)
         .map((c, i) => ({
@@ -94,17 +86,11 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-[var(--hs-bg)]">
       <Navbar />
-
       <main className="mx-auto max-w-7xl px-6 pt-24 pb-16">
-        {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              Heat Dashboard
-            </h1>
-            <p className="mt-1 text-sm text-[var(--hs-text-secondary)]">
-              Real-time urban temperature intelligence
-            </p>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Heat Dashboard</h1>
+            <p className="mt-1 text-sm text-[var(--hs-text-secondary)]">Real-time urban temperature intelligence</p>
           </div>
           <CitySelector selectedCity={selectedCity} onSelect={setSelectedCity} />
         </div>
@@ -113,40 +99,28 @@ export default function DashboardPage() {
           <LoadingSkeleton />
         ) : (
           <div className="grid gap-6 lg:grid-cols-3">
-            {/* ── Main Panel ────────────────────── */}
             <div className="lg:col-span-2 space-y-6">
               {/* Temperature Hero */}
               <div className="hs-glass-card relative overflow-hidden p-8">
-                <div className="absolute top-0 right-0 h-64 w-64 bg-[radial-gradient(circle,rgba(249,115,22,0.06)_0%,transparent_70%)]" />
+                <div className="absolute top-0 right-0 h-64 w-64 bg-[radial-gradient(circle,rgba(255,255,255,0.03)_0%,transparent_70%)]" />
                 <div className="relative flex flex-col items-center sm:flex-row sm:items-start sm:gap-12">
                   <div className="flex-1 text-center sm:text-left">
                     <div className="mb-1 text-xs font-semibold uppercase tracking-widest text-[var(--hs-text-muted)]">
                       {selectedCity.name}, {selectedCity.country} — Current
                     </div>
-                    <TemperatureGauge
-                      temperature={intel?.temperature?.current ?? 100}
-                      size="xl"
-                    />
+                    <TemperatureGauge temperature={intel?.temperature?.current ?? 100} size="xl" />
                     {intel?.temperature?.feels_like !== undefined && (
                       <p className="mt-2 text-sm text-[var(--hs-text-secondary)]">
                         Feels like{" "}
-                        <span className="font-medium text-[var(--hs-text-primary)]">
-                          {formatTemperature(intel.temperature.feels_like)}
+                        <span className="font-medium text-white">
+                          {Math.round(intel.temperature.feels_like)}°F
                         </span>
                       </p>
                     )}
                   </div>
-
-                  {/* Risk badge */}
                   {intel && (
                     <div className="mt-6 flex flex-col items-center gap-3 sm:mt-0">
-                      <div
-                        className="flex h-20 w-20 items-center justify-center rounded-2xl text-2xl font-bold"
-                        style={{
-                          background: `${intel.risk_score >= 70 ? "rgba(239,68,68,0.15)" : intel.risk_score >= 50 ? "rgba(249,115,22,0.15)" : "rgba(234,179,8,0.1)"}`,
-                          color: intel.risk_score >= 70 ? "var(--hs-heat-extreme)" : intel.risk_score >= 50 ? "var(--hs-heat-hot)" : "var(--hs-heat-warm)",
-                        }}
-                      >
+                      <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-[var(--hs-border)] bg-[var(--hs-bg)] text-2xl font-bold text-white">
                         {intel.risk_score}
                       </div>
                       <span className="text-xs font-semibold uppercase tracking-wider text-[var(--hs-text-secondary)]">
@@ -157,19 +131,19 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Env Params Grid */}
+              {/* Env Params */}
               {env && (
                 <div className="hs-glass-card p-6">
                   <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-[var(--hs-text-muted)]">
                     Environmental Parameters
                   </h3>
                   <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                    <EnvStat label="Heat Index" value={`${Math.round(env.heat_index)}°F`} color="var(--hs-heat-hot)" />
-                    <EnvStat label="Apparent Temp" value={`${Math.round(env.apparent_temperature)}°F`} color="var(--hs-heat-warm)" />
-                    <EnvStat label="Wet Bulb" value={`${Math.round(env.wet_bulb_temperature)}°F`} color="var(--hs-heat-cool)" />
-                    <EnvStat label="Humidity" value={`${Math.round(env.humidity)}%`} color="var(--hs-heat-mild)" />
-                    <EnvStat label="Wind Speed" value={`${Math.round(env.wind_speed)} mph`} color="var(--hs-text-secondary)" />
-                    <EnvStat label="UV Index" value={`${Math.round(env.uv_index)}`} color={env.uv_index >= 8 ? "var(--hs-heat-extreme)" : "var(--hs-heat-warm)"} />
+                    <EnvStat label="Heat Index" value={`${Math.round(env.heat_index)}°F`} />
+                    <EnvStat label="Apparent Temp" value={`${Math.round(env.apparent_temperature)}°F`} />
+                    <EnvStat label="Wet Bulb" value={`${Math.round(env.wet_bulb_temperature)}°F`} />
+                    <EnvStat label="Humidity" value={`${Math.round(env.humidity)}%`} />
+                    <EnvStat label="Wind Speed" value={`${Math.round(env.wind_speed)} mph`} />
+                    <EnvStat label="UV Index" value={`${Math.round(env.uv_index)}`} />
                   </div>
                 </div>
               )}
@@ -178,12 +152,12 @@ export default function DashboardPage() {
               {intel?.recommendations && intel.recommendations.length > 0 && (
                 <div className="hs-glass-card p-6">
                   <h3 className="mb-4 text-sm font-semibold uppercase tracking-widest text-[var(--hs-text-muted)]">
-                    🛡️ Safety Recommendations
+                    Safety Recommendations
                   </h3>
                   <ul className="space-y-3">
                     {intel.recommendations.map((rec, i) => (
                       <li key={i} className="flex items-start gap-3 text-sm text-[var(--hs-text-secondary)]">
-                        <span className="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-[rgba(249,115,22,0.1)] text-center text-xs leading-5 text-[var(--hs-accent)]">
+                        <span className="mt-0.5 h-5 w-5 shrink-0 rounded-full border border-[var(--hs-border)] bg-[var(--hs-bg)] text-center text-xs leading-5 text-white">
                           {i + 1}
                         </span>
                         {rec}
@@ -194,7 +168,7 @@ export default function DashboardPage() {
               )}
             </div>
 
-            {/* ── Side Panel ────────────────────── */}
+            {/* Side Panel */}
             <div className="space-y-6">
               <h3 className="text-sm font-semibold uppercase tracking-widest text-[var(--hs-text-muted)]">
                 Monitored Zones
@@ -208,26 +182,16 @@ export default function DashboardPage() {
                   riskLevel={zone.riskLevel}
                   riskScore={zone.riskScore}
                   heatIndex={zone.heatIndex}
-                  lastUpdated={timeAgo(zone.lastUpdated)}
+                  lastUpdated={new Date(zone.lastUpdated).toLocaleTimeString()}
                 />
               ))}
-
-              {/* Quick Actions */}
               <div className="hs-glass-card p-5 space-y-3">
-                <h4 className="text-sm font-semibold text-[var(--hs-text-primary)]">
-                  Quick Actions
-                </h4>
-                <a
-                  href="/routes"
-                  className="flex items-center gap-2 rounded-lg bg-[var(--hs-bg-card)] px-3 py-2.5 text-sm text-[var(--hs-text-secondary)] transition-colors hover:bg-[var(--hs-bg-card-hover)] hover:text-[var(--hs-text-primary)]"
-                >
-                  🚶 Plan Cool Route
+                <h4 className="text-sm font-semibold text-white">Quick Actions</h4>
+                <a href="/routes" className="flex items-center gap-2 rounded-lg bg-[var(--hs-bg)] px-3 py-2.5 text-sm text-[var(--hs-text-secondary)] transition-colors hover:bg-[var(--hs-bg-card)] hover:text-white">
+                  ▸ Plan Cool Route
                 </a>
-                <a
-                  href="/advisor"
-                  className="flex items-center gap-2 rounded-lg bg-[var(--hs-bg-card)] px-3 py-2.5 text-sm text-[var(--hs-text-secondary)] transition-colors hover:bg-[var(--hs-bg-card-hover)] hover:text-[var(--hs-text-primary)]"
-                >
-                  🤖 Ask AI Advisor
+                <a href="/advisor" className="flex items-center gap-2 rounded-lg bg-[var(--hs-bg)] px-3 py-2.5 text-sm text-[var(--hs-text-secondary)] transition-colors hover:bg-[var(--hs-bg-card)] hover:text-white">
+                  ◈ Ask AI Advisor
                 </a>
               </div>
             </div>
@@ -238,21 +202,11 @@ export default function DashboardPage() {
   );
 }
 
-function EnvStat({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color: string;
-}) {
+function EnvStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl bg-[var(--hs-bg)] p-3">
       <div className="text-xs text-[var(--hs-text-muted)]">{label}</div>
-      <div className="mt-1 font-mono text-lg font-semibold" style={{ color }}>
-        {value}
-      </div>
+      <div className="mt-1 font-mono text-lg font-semibold text-white">{value}</div>
     </div>
   );
 }
