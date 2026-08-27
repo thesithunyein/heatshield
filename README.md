@@ -49,22 +49,6 @@ The platform is live at heatshield.sithunyein.com and the full source code is op
 
 ---
 
-## The Problem
-
-Heat kills **977 people per year** in Arizona alone. Since 2013, **4,320 people** have died from extreme heat in the state. In 2024, there were **6,863 heat-related hospital visits**. In 2026, heat deaths are **triple** what they were at the same time in 2025.
-
-**88% of heat victims are found outdoors.** 32% are experiencing homelessness. They die because they don't know where the nearest cooling center is, or the cooling center isn't in the right place.
-
-**The core problem:** Cities deploy cooling centers based on **city-wide average temperatures**, not **street-level data**. One block can be 110°F while the block next door is 95°F. The people on the hot block, mostly elderly, mostly vulnerable, die because the cooling center is in the wrong place.
-
-**Phoenix cooling centers recorded nearly 30,000 visits** this summer. But placement is still based on averages, not hyperlocal intelligence.
-
-**HeatShield solves this.** We use FortyGuard's 20m² resolution temperature data to show exactly which blocks are hottest, where vulnerable populations are, and where to place cooling centers for maximum impact.
-
-**Impact:** Optimal cooling center placement could prevent an estimated **47 heat-related deaths per summer** in Phoenix alone.
-
----
-
 ## Architecture
 
 ```mermaid
