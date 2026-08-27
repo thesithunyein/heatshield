@@ -175,27 +175,29 @@ export default function TwinPage() {
             {/* Hourly Chart */}
             <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 sm:p-5 md:p-6 mb-6 sm:mb-8">
               <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-4 sm:mb-6">Hourly Temperature Simulation</h3>
-              <div className="flex items-end gap-1.5 sm:gap-2 h-48 sm:h-64">
-                {data.map((d) => {
-                  const height = (d.temperature / maxTemp) * 100;
-                  const isSelected = selectedHour === d.hour;
-                  return (
-                    <div key={d.hour} className="flex-1 flex flex-col items-center gap-1" onClick={() => setSelectedHour(isSelected ? null : d.hour)}>
-                      <span className={`text-[9px] sm:text-[10px] font-mono transition-colors ${isSelected ? "text-white" : "text-white/30"}`}>{d.temperature}°</span>
-                      <div
-                        className="w-full rounded-t-md transition-all duration-500 cursor-pointer hover:opacity-80"
-                        style={{
-                          height: `${height}%`,
-                          minHeight: '4px',
-                          background: `linear-gradient(to top, ${getBarColor(d.temperature)}88, ${getBarColor(d.temperature)})`,
-                          opacity: isSelected ? 1 : 0.8,
-                          boxShadow: `0 0 8px ${getBarColor(d.temperature)}44`,
-                        }}
-                      />
-                      <span className={`text-[8px] sm:text-[9px] font-mono transition-colors ${isSelected ? "text-white" : "text-white/20"}`}>{d.hour}h</span>
-                    </div>
-                  );
-                })}
+              <div className="relative h-48 sm:h-64">
+                <div className="absolute inset-0 flex items-end gap-1.5 sm:gap-2">
+                  {data.map((d) => {
+                    const barHeight = Math.max(8, (d.temperature / maxTemp) * 100);
+                    const isSelected = selectedHour === d.hour;
+                    return (
+                      <div key={d.hour} className="flex-1 flex flex-col items-center justify-end h-full" onClick={() => setSelectedHour(isSelected ? null : d.hour)}>
+                        <span className={`text-[9px] sm:text-[10px] font-mono transition-colors mb-1 ${isSelected ? "text-white" : "text-white/30"}`}>{d.temperature}°</span>
+                        <div
+                          className="w-full rounded-t-md transition-all duration-500 cursor-pointer hover:opacity-80"
+                          style={{
+                            height: `${barHeight}%`,
+                            minHeight: '6px',
+                            background: `linear-gradient(to top, ${getBarColor(d.temperature)}88, ${getBarColor(d.temperature)})`,
+                            opacity: isSelected ? 1 : 0.8,
+                            boxShadow: `0 0 8px ${getBarColor(d.temperature)}44`,
+                          }}
+                        />
+                        <span className={`text-[8px] sm:text-[9px] font-mono transition-colors mt-1 ${isSelected ? "text-white" : "text-white/20"}`}>{d.hour}h</span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
