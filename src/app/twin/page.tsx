@@ -17,20 +17,21 @@ interface HourlyData {
 }
 
 function getBarColor(temp: number): string {
-  if (temp >= 115) return "#FAFAFA";
-  if (temp >= 110) return "#D4D4D8";
-  if (temp >= 105) return "#A1A1AA";
-  if (temp >= 100) return "#71717A";
-  if (temp >= 95) return "#52525B";
-  return "#3F3F46";
+  if (temp >= 115) return "#F87171";
+  if (temp >= 110) return "#FB923C";
+  if (temp >= 105) return "#FBBF24";
+  if (temp >= 100) return "#A3E635";
+  if (temp >= 95) return "#34D399";
+  if (temp >= 90) return "#22D3EE";
+  return "#60A5FA";
 }
 
 function getRiskColor(score: number): string {
-  if (score >= 80) return "#FAFAFA";
-  if (score >= 65) return "#D4D4D8";
-  if (score >= 45) return "#A1A1AA";
-  if (score >= 25) return "#71717A";
-  return "#52525B";
+  if (score >= 80) return "#F87171";
+  if (score >= 65) return "#FB923C";
+  if (score >= 45) return "#FBBF24";
+  if (score >= 25) return "#34D399";
+  return "#22D3EE";
 }
 
 export default function TwinPage() {
@@ -185,8 +186,10 @@ export default function TwinPage() {
                         className="w-full rounded-t-md transition-all duration-500 cursor-pointer hover:opacity-80"
                         style={{
                           height: `${height}%`,
-                          background: getBarColor(d.temperature),
-                          opacity: isSelected ? 1 : 0.7,
+                          minHeight: '4px',
+                          background: `linear-gradient(to top, ${getBarColor(d.temperature)}88, ${getBarColor(d.temperature)})`,
+                          opacity: isSelected ? 1 : 0.8,
+                          boxShadow: `0 0 8px ${getBarColor(d.temperature)}44`,
                         }}
                       />
                       <span className={`text-[8px] sm:text-[9px] font-mono transition-colors ${isSelected ? "text-white" : "text-white/20"}`}>{d.hour}h</span>
