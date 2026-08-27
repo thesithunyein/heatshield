@@ -306,9 +306,8 @@ export default function Home() {
                 <li><a href="https://github.com/thesithunyein/heatshield" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">GitHub</a></li>
                 <li><a href="https://docs-api.fortyguard.com" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">Documentation</a></li>
                 <li><a href="https://www.fortyguard.com/hackathon26" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">Hackathon&apos;26</a></li>
-                <li><a href="https://www.fortyguard.com/pricing" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">API Pricing</a></li>
-                <li><Link href="/#privacy" className="text-sm text-white/50 hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/#terms" className="text-sm text-white/50 hover:text-white transition-colors">Terms of Service</Link></li>
+                <li><a href="https://www.fortyguard.com/pricing" target="_blank" rel="noopener noreferrer" className="text-sm text-white/50 hover:text-white transition-colors">API Pricing</a></li><li><Link href="/privacy" className="text-sm text-white/50 hover:text-white transition-colors">Privacy Policy</Link></li>
+                 <li><Link href="/terms" className="text-sm text-white/50 hover:text-white transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
             <div>
@@ -343,7 +342,7 @@ export default function Home() {
               </div>
               <span className="text-xs font-semibold text-white">HeatShield</span>
             </div>
-            <p className="text-[11px] text-white/30">© 2026 HeatShield. All rights reserved <span className="mx-1">●</span> <Link href="#privacy" className="text-white font-medium hover:underline">Privacy Policy</Link> <span className="mx-1">●</span> <Link href="#terms" className="text-white font-medium hover:underline">Terms</Link></p>
+            <p className="text-[11px] text-white/30">© 2026 HeatShield. All rights reserved <span className="mx-1">●</span> <Link href="/privacy" className="text-white font-medium hover:underline">Privacy Policy</Link> <span className="mx-1">●</span> <Link href="/terms" className="text-white font-medium hover:underline">Terms</Link></p>
             <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="w-9 h-9 rounded-full bg-white flex items-center justify-center text-[#111] hover:bg-white/90 transition-colors">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
             </button>
