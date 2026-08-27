@@ -145,13 +145,16 @@ heatshield/
 │   │       │   └── route.ts        # FortyGuard env-params proxy
 │   │       ├── heatmap/
 │   │       │   └── route.ts        # FortyGuard heatmap proxy
-│   │       ├── satellite/
-│   │       │   └── route.ts        # FortyGuard satellite proxy
 │   │       └── advisor/
 │   │           └── route.ts        # Featherless AI chat proxy
+│   │   ├── privacy/
+│   │   │   └── page.tsx            # Privacy Policy
+│   │   └── terms/
+│   │       └── page.tsx            # Terms of Service
 │   ├── components/
 │   │   ├── Navbar.tsx               # Responsive nav with mobile menu
 │   │   ├── HeatMap.tsx              # Leaflet map with thermal overlay
+│   │   ├── HeatOverlay.tsx          # Thermal overlay layer
 │   │   ├── TemperatureGauge.tsx     # Animated temperature display
 │   │   ├── RiskCard.tsx             # City risk score card
 │   │   └── CitySelector.tsx         # City search dropdown
