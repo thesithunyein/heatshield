@@ -355,19 +355,71 @@ export default function DashboardPage() {
                   {loadingHourly && <span className="text-[9px] text-white/20">Loading...</span>}
                 </div>
                 {hourlyData.length > 0 ? (
-                  <div className="relative h-32 sm:h-40">
-                    <div className="absolute inset-0 flex items-end gap-1.5 sm:gap-2">
-                      {hourlyData.map((d) => {
-                        const barHeight = Math.max(8, (d.temp / maxHourlyTemp) * 100);
+                  <div className="relative h-40 sm:h-52">
+                    <svg viewBox="0 0 400 160" className="w-full h-full" preserveAspectRatio="none">
+                      <defs>
+                        <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.3" />
+                          <stop offset="100%" stopColor="#22D3EE" stopOpacity="0.02" />
+                        </linearGradient>
+                        <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
+                          <stop offset="0%" stopColor="#60A5FA" />
+                          <stop offset="50%" stopColor="#22D3EE" />
+                          <stop offset="100%" stopColor="#34D399" />
+                        </linearGradient>
+                      </defs>
+                      {/* Grid lines */}
+                      {[0, 1, 2, 3, 4].map((i) => (
+                        <line key={i} x1="0" y1={i * 40} x2="400" y2={i * 40} stroke="white" strokeOpacity="0.05" />
+                      ))}
+                      {/* Area fill */}
+                      <path
+                        d={`M ${hourlyData.map((d, i) => {
+                          const x = (i / (hourlyData.length - 1)) * 400;
+                          const y = 160 - ((d.temp - 60) / (maxHourlyTemp - 60)) * 140;
+                          return `${x},${y}`;
+                        }).join(' L ')} L 400,160 L 0,160 Z`}
+                        fill="url(#tempGradient)"
+                      />
+                      {/* Line */}
+                      <path
+                        d={`M ${hourlyData.map((d, i) => {
+                          const x = (i / (hourlyData.length - 1)) * 400;
+                          const y = 160 - ((d.temp - 60) / (maxHourlyTemp - 60)) * 140;
+                          return `${x},${y}`;
+                        }).join(' L ')}`}
+                        fill="none"
+                        stroke="url(#lineGradient)"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      {/* Data points */}
+                      {hourlyData.map((d, i) => {
+                        const x = (i / (hourlyData.length - 1)) * 400;
+                        const y = 160 - ((d.temp - 60) / (maxHourlyTemp - 60)) * 140;
                         return (
-                          <div key={d.hour} className="flex-1 flex flex-col items-center justify-end h-full">
-                            <span className="text-[8px] sm:text-[9px] font-mono text-white/30 mb-1">{d.temp}°</span>
-                            <div className="w-full rounded-t-md" style={{ height: `${barHeight}%`, minHeight: '6px', background: `linear-gradient(to top, ${getBarColor(d.temp)}88, ${getBarColor(d.temp)})`, boxShadow: `0 0 8px ${getBarColor(d.temp)}44` }} />
-                            <span className="text-[8px] font-mono text-white/20 mt-1">{d.hour}h</span>
-                          </div>
+                          <g key={d.hour}>
+                            <circle cx={x} cy={y} r="4" fill="#09090B" stroke="#22D3EE" strokeWidth="2" />
+                            <text x={x} y={y - 12} textAnchor="middle" fill="white" fillOpacity="0.5" fontSize="10" fontFamily="monospace">{d.temp}°</text>
+                            <text x={x} y={155} textAnchor="middle" fill="white" fillOpacity="0.25" fontSize="9" fontFamily="monospace">{d.hour}h</text>
+                          </g>
                         );
                       })}
-                    </div>
+                      {/* Peak indicator */}
+                      {(() => {
+                        const peakIdx = hourlyData.findIndex((d) => d.temp === maxHourlyTemp);
+                        if (peakIdx === -1) return null;
+                        const x = (peakIdx / (hourlyData.length - 1)) * 400;
+                        const y = 160 - ((maxHourlyTemp - 60) / (maxHourlyTemp - 60)) * 140;
+                        return (
+                          <g>
+                            <rect x={x - 18} y={y - 28} width="36" height="20" rx="4" fill="#22D3EE" />
+                            <text x={x} y={y - 14} textAnchor="middle" fill="white" fontSize="11" fontWeight="bold" fontFamily="monospace">{maxHourlyTemp}°</text>
+                          </g>
+                        );
+                      })()}
+                    </svg>
                   </div>
                 ) : (
                   <div className="h-32 flex items-center justify-center text-[11px] text-white/20">No hourly data</div>
