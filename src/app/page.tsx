@@ -26,6 +26,7 @@ const FEATURES = [
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [heroTemp, setHeroTemp] = useState(0);
+  const [subscribed, setSubscribed] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
@@ -313,12 +314,21 @@ export default function Home() {
             <div>
               <h4 className="text-sm font-semibold text-white mb-4">Stay updated:</h4>
               <p className="text-sm text-white/40 mb-4 leading-relaxed">Get the latest heat intelligence insights and product updates.</p>
-              <div className="flex border-b border-white/20 pb-2">
-                <input type="email" placeholder="Your email here" className="flex-1 bg-transparent text-sm text-white placeholder-white/30 outline-none" />
-                <button className="text-white/60 hover:text-white transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                </button>
-              </div>
+              {subscribed ? (
+                <div className="flex items-center gap-2 py-2">
+                  <div className="h-5 w-5 rounded-full bg-[#10B981]/20 flex items-center justify-center">
+                    <svg className="w-3 h-3 text-[#34D399]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M20 6L9 17l-5-5" /></svg>
+                  </div>
+                  <span className="text-sm text-[#34D399]">Thanks! You&apos;re subscribed.</span>
+                </div>
+              ) : (
+                <form onSubmit={(e) => { e.preventDefault(); setSubscribed(true); }} className="flex border-b border-white/20 pb-2">
+                  <input type="email" required placeholder="Your email here" className="flex-1 bg-transparent text-sm text-white placeholder-white/30 outline-none" />
+                  <button type="submit" className="text-white/60 hover:text-white transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                  </button>
+                </form>
+              )}
               <p className="text-[10px] text-white/25 mt-3 leading-relaxed hidden sm:block">By signing up, you agree to our Privacy Policy. We respect your data.</p>
               <div className="mt-6">
                 <p className="text-xs font-semibold text-white mb-3">Follow us on:</p>
