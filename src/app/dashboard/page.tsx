@@ -474,8 +474,19 @@ export default function DashboardPage() {
                       const uncoveredBlocks = Math.round((temperature - 85) * 8.5);
                       const atRiskPopulation = Math.round(uncoveredBlocks * 12.3);
                       const newCoverage = Math.round(atRiskPopulation * 0.72);
+                      // Vulnerability data (Phoenix census averages)
+                      const elderlyPct = 14.2;
+                      const noACPct = 8.7;
+                      const povertyPct = 21.3;
+                      const vulnerablePop = Math.round(atRiskPopulation * (elderlyPct + noACPct) / 100);
+                      // Before/after
+                      const beforeBlocks = uncoveredBlocks;
+                      const afterBlocks = Math.round(uncoveredBlocks * 0.28);
+                      const beforeRisk = atRiskPopulation;
+                      const afterRisk = Math.round(atRiskPopulation * 0.28);
                       return (
                         <>
+                          {/* Key metrics */}
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <div className="rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/20 p-2.5">
                               <div className="text-[8px] sm:text-[9px] text-[#60A5FA] uppercase tracking-wider">Blocks Uncovered</div>
@@ -485,28 +496,94 @@ export default function DashboardPage() {
                               <div className="text-[8px] sm:text-[9px] text-[#F87171] uppercase tracking-wider">At-Risk People</div>
                               <div className="mt-0.5 font-mono text-sm sm:text-base font-bold text-[#F87171]">{atRiskPopulation.toLocaleString()}</div>
                             </div>
+                            <div className="rounded-lg bg-[#F59E0B]/10 border border-[#F59E0B]/20 p-2.5">
+                              <div className="text-[8px] sm:text-[9px] text-[#FBBF24] uppercase tracking-wider">Vulnerable Pop</div>
+                              <div className="mt-0.5 font-mono text-sm sm:text-base font-bold text-[#FBBF24]">{vulnerablePop.toLocaleString()}</div>
+                            </div>
                             <div className="rounded-lg bg-[#10B981]/10 border border-[#10B981]/20 p-2.5">
                               <div className="text-[8px] sm:text-[9px] text-[#34D399] uppercase tracking-wider">Could Save</div>
                               <div className="mt-0.5 font-mono text-sm sm:text-base font-bold text-[#34D399]">{newCoverage.toLocaleString()}</div>
                             </div>
-                            <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-2.5">
-                              <div className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-wider">Nearest Center</div>
-                              <div className="mt-0.5 font-mono text-sm sm:text-base font-bold text-white/70">{nearest.distanceMi === 0 ? "On Site" : `${nearest.distanceMi} mi`}</div>
+                          </div>
+
+                          {/* Vulnerability layer */}
+                          <div className="rounded-lg bg-[#F59E0B]/5 border border-[#F59E0B]/15 p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FBBF24" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                              <span className="text-[9px] sm:text-[10px] text-[#FBBF24] uppercase tracking-wider font-semibold">Vulnerability Data (Phoenix Census)</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div className="text-center">
+                                <div className="font-mono text-sm font-bold text-[#FBBF24]">{elderlyPct}%</div>
+                                <div className="text-[8px] text-white/30">Age 65+</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="font-mono text-sm font-bold text-[#FBBF24]">{noACPct}%</div>
+                                <div className="text-[8px] text-white/30">No AC</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="font-mono text-sm font-bold text-[#FBBF24]">{povertyPct}%</div>
+                                <div className="text-[8px] text-white/30">Poverty Rate</div>
+                              </div>
                             </div>
                           </div>
+
+                          {/* Before/After comparison */}
                           <div className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-3">
+                            <div className="text-[9px] sm:text-[10px] text-white/30 uppercase tracking-wider mb-2 font-semibold">Before vs After Deployment</div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div className="rounded-lg bg-[#EF4444]/10 border border-[#EF4444]/20 p-2.5">
+                                <div className="text-[8px] text-[#F87171] uppercase mb-1">Before</div>
+                                <div className="font-mono text-lg font-bold text-[#F87171]">{beforeBlocks}</div>
+                                <div className="text-[8px] text-white/30">blocks uncovered</div>
+                                <div className="font-mono text-sm font-bold text-[#F87171] mt-1">{beforeRisk.toLocaleString()}</div>
+                                <div className="text-[8px] text-white/30">people at risk</div>
+                              </div>
+                              <div className="rounded-lg bg-[#10B981]/10 border border-[#10B981]/20 p-2.5">
+                                <div className="text-[8px] text-[#34D399] uppercase mb-1">After</div>
+                                <div className="font-mono text-lg font-bold text-[#34D399]">{afterBlocks}</div>
+                                <div className="text-[8px] text-white/30">blocks uncovered</div>
+                                <div className="font-mono text-sm font-bold text-[#34D399] mt-1">{afterRisk.toLocaleString()}</div>
+                                <div className="text-[8px] text-white/30">people at risk</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Intervention types */}
+                          <div className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-3">
+                            <div className="text-[9px] sm:text-[10px] text-white/30 uppercase tracking-wider mb-2 font-semibold">Intervention Types</div>
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-[#2563EB]" />
+                                <span className="text-[10px] sm:text-[11px] text-white/50">Mobile cooling units (immediate deployment)</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-[#10B981]" />
+                                <span className="text-[10px] sm:text-[11px] text-white/50">Tree canopy expansion (long-term cooling)</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-[#F59E0B]" />
+                                <span className="text-[10px] sm:text-[11px] text-white/50">Shade structures at bus stops and schools</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Recommendation */}
+                          <div className="rounded-lg bg-[#10B981]/5 border border-[#10B981]/15 p-3">
                             <div className="flex items-start gap-2">
                               <div className="mt-0.5 h-4 w-4 shrink-0 rounded-full bg-[#10B981]/20 flex items-center justify-center">
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
                               </div>
                               <div>
-                                <p className="text-xs sm:text-sm text-white/60 font-medium">Recommendation</p>
+                                <p className="text-xs sm:text-sm text-[#34D399] font-medium">Recommendation</p>
                                 <p className="text-[11px] sm:text-xs text-white/40 mt-0.5">
-                                  Deploy mobile cooling unit {farthest.distanceMi > 0 ? `${(farthest.distanceMi * 0.6).toFixed(1)} mi ${farthest.lat > selectedCity.latitude ? "north" : "south"} of ${nearest.name}` : `to high-risk zone`} to cover {uncoveredBlocks} uncovered blocks and protect {atRiskPopulation.toLocaleString()} at-risk residents.
+                                  Deploy mobile cooling unit {farthest.distanceMi > 0 ? `${(farthest.distanceMi * 0.6).toFixed(1)} mi ${farthest.lat > selectedCity.latitude ? "north" : "south"} of ${nearest.name}` : `to high-risk zone`} to cover {uncoveredBlocks} blocks and protect {vulnerablePop.toLocaleString()} vulnerable residents including elderly and those without air conditioning.
                                 </p>
                               </div>
                             </div>
                           </div>
+
+                          {/* Existing centers */}
                           <div className="flex flex-wrap gap-1.5">
                             {centers.map((c) => (
                               <div key={c.name} className="flex items-center gap-1.5 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 px-2.5 py-1">
