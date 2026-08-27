@@ -200,6 +200,7 @@ export default function DashboardPage() {
   const [fetchingZones, setFetchingZones] = useState(false);
   const [hourlyData, setHourlyData] = useState<HourlyPoint[]>([]);
   const [loadingHourly, setLoadingHourly] = useState(false);
+  const [selectedHour, setSelectedHour] = useState<number | null>(null);
 
   const fetchData = useCallback(async (city: City) => {
     setLoading(true);
@@ -398,11 +399,19 @@ export default function DashboardPage() {
                       {hourlyData.map((d, i) => {
                         const x = (i / (hourlyData.length - 1)) * 400;
                         const y = 160 - ((d.temp - 60) / (maxHourlyTemp - 60)) * 140;
+                        const isSelected = selectedHour === d.hour;
                         return (
-                          <g key={d.hour}>
-                            <circle cx={x} cy={y} r="4" fill="#09090B" stroke="#22D3EE" strokeWidth="2" />
-                            <text x={x} y={y - 12} textAnchor="middle" fill="white" fillOpacity="0.5" fontSize="10" fontFamily="monospace">{d.temp}°</text>
-                            <text x={x} y={155} textAnchor="middle" fill="white" fillOpacity="0.25" fontSize="9" fontFamily="monospace">{d.hour}h</text>
+                          <g key={d.hour} onClick={() => setSelectedHour(isSelected ? null : d.hour)} style={{ cursor: 'pointer' }}>
+                            <circle cx={x} cy={y} r="12" fill="transparent" />
+                            <circle cx={x} cy={y} r={isSelected ? 6 : 4} fill="#09090B" stroke="#22D3EE" strokeWidth="2" />
+                            <text x={x} y={y - 12} textAnchor="middle" fill={isSelected ? '#22D3EE' : 'white'} fillOpacity={isSelected ? 1 : 0.5} fontSize="10" fontWeight={isSelected ? 'bold' : 'normal'} fontFamily="monospace">{d.temp}°</text>
+                            <text x={x} y={155} textAnchor="middle" fill={isSelected ? '#22D3EE' : 'white'} fillOpacity={isSelected ? 1 : 0.25} fontSize="9" fontFamily="monospace">{d.hour}h</text>
+                            {isSelected && (
+                              <rect x={x - 30} y={y - 45} width="60" height="24" rx="6" fill="#22D3EE" fillOpacity="0.9" />
+                            )}
+                            {isSelected && (
+                              <text x={x} y={y - 29} textAnchor="middle" fill="white" fontSize="11" fontWeight="bold" fontFamily="monospace">{d.temp}°F at {d.hour}:00</text>
+                            )}
                           </g>
                         );
                       })}
