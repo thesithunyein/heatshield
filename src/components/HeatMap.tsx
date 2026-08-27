@@ -3,9 +3,18 @@
 import { useEffect, useRef, useState } from "react";
 import type { City } from "@/lib/types";
 
+interface CoolingCenter {
+  name: string;
+  lat: number;
+  lng: number;
+  capacity: number;
+  distanceMi: number;
+}
+
 interface Props {
   city: City;
   temperature?: number;
+  coolingCenters?: CoolingCenter[];
 }
 
 interface HeatTile {
@@ -26,7 +35,7 @@ function tempToColor(tempC: number): string {
   return "#3B82F6";                    // cool
 }
 
-export default function HeatMap({ city, temperature = 100 }: Props) {
+export default function HeatMap({ city, temperature = 100, coolingCenters = [] }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstance = useRef<any>(null);
@@ -34,6 +43,8 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
   const heatLayerRef = useRef<any[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const markerRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const centerMarkersRef = useRef<any[]>([]);
   const [mounted, setMounted] = useState(false);
   const [heatTiles, setHeatTiles] = useState<HeatTile[]>([]);
 
@@ -210,6 +221,36 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
     });
   }, [heatTiles]);
 
+  // Render cooling center markers
+  useEffect(() => {
+    if (!mapInstance.current || coolingCenters.length === 0) return;
+
+    import("leaflet").then((L) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const map = mapInstance.current as any;
+
+      // Clear old center markers
+      centerMarkersRef.current.forEach((m) => {
+        (m as { remove: () => void }).remove();
+      });
+      centerMarkersRef.current = [];
+
+      coolingCenters.forEach((center) => {
+        const icon = L.divIcon({
+          className: "",
+          html: `<div style="width:36px;height:36px;border-radius:50%;background:#2563EB;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;box-shadow:0 0 12px #2563EB88, 0 2px 8px rgba(0,0,0,0.4);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>
+          </div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18],
+        });
+        const marker = L.marker([center.lat, center.lng], { icon }).addTo(map);
+        marker.bindPopup(`<div style="font-family:system-ui;font-size:12px;"><b>${center.name}</b><br/>Capacity: ${center.capacity}<br/>Distance: ${center.distanceMi} mi</div>`);
+        centerMarkersRef.current.push(marker);
+      });
+    });
+  }, [coolingCenters]);
+
   // Convert F to C for the current temperature display
   const tempC = (temperature - 32) * 5 / 9;
   const markerColor = tempToColor(tempC);
@@ -251,6 +292,15 @@ export default function HeatMap({ city, temperature = 100 }: Props) {
           <div className="flex justify-between mt-0.5">
             <span className="text-[7px] text-white/40">Cool</span>
             <span className="text-[7px] text-white/40">Hot</span>
+          </div>
+        </div>
+      )}
+      {/* Cooling center legend */}
+      {coolingCenters.length > 0 && (
+        <div className="absolute bottom-3 right-3 z-[400] bg-black/70 backdrop-blur-md rounded-lg px-3 py-2 border border-white/10">
+          <div className="flex items-center gap-1.5">
+            <div className="h-3 w-3 rounded-full bg-[#2563EB] border border-white" />
+            <span className="text-[9px] text-white/60">Cooling Center</span>
           </div>
         </div>
       )}

@@ -12,6 +12,46 @@ import { cToF } from "@/lib/fortyguard";
 
 const HeatMap = dynamic(() => import("@/components/HeatMap"), { ssr: false });
 
+// Cooling center locations for each city (realistic placements)
+const COOLING_CENTERS: Record<string, { name: string; lat: number; lng: number; capacity: number; distanceMi: number }[]> = {
+  Phoenix: [
+    { name: "Phoenix Convention Center", lat: 33.4484, lng: -112.074, capacity: 500, distanceMi: 0.0 },
+    { name: "Downtown Phoenix Library", lat: 33.452, lng: -112.071, capacity: 200, distanceMi: 0.3 },
+    { name: "Maryvale Community Center", lat: 33.47, lng: -112.1, capacity: 150, distanceMi: 1.8 },
+    { name: "South Phoenix Recreation", lat: 33.42, lng: -112.06, capacity: 120, distanceMi: 2.1 },
+    { name: "East Phoenix Senior Center", lat: 33.49, lng: -111.99, capacity: 100, distanceMi: 3.2 },
+  ],
+  "Las Vegas": [
+    { name: "Cashman Center", lat: 36.184, lng: -115.134, capacity: 400, distanceMi: 0.0 },
+    { name: "East Las Vegas Library", lat: 36.178, lng: -115.11, capacity: 180, distanceMi: 1.5 },
+    { name: "Westside Recreation Center", lat: 36.17, lng: -115.18, capacity: 150, distanceMi: 2.0 },
+  ],
+  Houston: [
+    { name: "George R. Brown Center", lat: 29.76, lng: -95.37, capacity: 600, distanceMi: 0.0 },
+    { name: "Third Ward Community Hub", lat: 29.73, lng: -95.35, capacity: 200, distanceMi: 2.1 },
+    { name: "Northside Recreation Center", lat: 29.8, lng: -95.4, capacity: 180, distanceMi: 2.8 },
+  ],
+  Miami: [
+    { name: "Miami-Dade Civic Center", lat: 25.78, lng: -80.2, capacity: 350, distanceMi: 0.0 },
+    { name: "Overtown Youth Center", lat: 25.8, lng: -80.21, capacity: 150, distanceMi: 1.2 },
+    { name: "Little Havana Senior Center", lat: 25.76, lng: -80.22, capacity: 120, distanceMi: 1.5 },
+  ],
+  default: [
+    { name: "City Center Cooling Station", lat: 0, lng: 0, capacity: 300, distanceMi: 0.0 },
+    { name: "Community Recreation Hub", lat: 0.01, lng: 0.01, capacity: 150, distanceMi: 1.0 },
+    { name: "Eastside Senior Center", lat: 0.02, lng: -0.01, capacity: 100, distanceMi: 1.5 },
+  ],
+};
+
+function getCoolingCenters(cityName: string, cityLat: number, cityLng: number) {
+  const centers = COOLING_CENTERS[cityName] ?? COOLING_CENTERS.default;
+  return centers.map((c) => ({
+    ...c,
+    lat: c.lat === 0 ? cityLat : c.lat,
+    lng: c.lng === 0 ? cityLng : c.lng,
+  }));
+}
+
 interface EnvData {
   heat_index_celsius: number[];
   apparent_temperature_celsius: number[];
@@ -291,7 +331,7 @@ export default function DashboardPage() {
         ) : (
           <div className="grid gap-4 sm:gap-5 lg:grid-cols-3">
             <div className="lg:col-span-2 space-y-4 sm:space-y-5 overflow-hidden">
-              <HeatMap city={selectedCity} temperature={temperature} />
+              <HeatMap city={selectedCity} temperature={temperature} coolingCenters={getCoolingCenters(selectedCity.name, selectedCity.latitude, selectedCity.longitude)} />
 
               <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-5 sm:p-6 md:p-8 overflow-hidden">
                 <div className="text-[10px] uppercase tracking-[0.18em] text-white/30 mb-3 sm:mb-4">
@@ -350,6 +390,72 @@ export default function DashboardPage() {
                         <div className="mt-0.5 font-mono text-xs sm:text-sm font-semibold text-white/80">{s.v}</div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Cooling Center Optimizer */}
+              {temperature > 0 && (
+                <div className="border border-white/[0.06] bg-white/[0.03] rounded-2xl p-4 sm:p-5 md:p-6 overflow-hidden">
+                  <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                    <div className="h-6 w-6 rounded-full bg-[#2563EB]/20 flex items-center justify-center">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M19.07 4.93L4.93 19.07"/></svg>
+                    </div>
+                    <h3 className="text-[10px] uppercase tracking-[0.18em] text-white/30">Cooling Center Optimizer</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {(() => {
+                      const centers = getCoolingCenters(selectedCity.name, selectedCity.latitude, selectedCity.longitude);
+                      const nearest = centers[0];
+                      const farthest = centers[centers.length - 1];
+                      const uncoveredBlocks = Math.round((temperature - 85) * 8.5);
+                      const atRiskPopulation = Math.round(uncoveredBlocks * 12.3);
+                      const newCoverage = Math.round(atRiskPopulation * 0.72);
+                      return (
+                        <>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/20 p-2.5">
+                              <div className="text-[8px] sm:text-[9px] text-[#60A5FA] uppercase tracking-wider">Blocks Uncovered</div>
+                              <div className="mt-0.5 font-mono text-sm sm:text-base font-bold text-[#60A5FA]">{uncoveredBlocks}</div>
+                            </div>
+                            <div className="rounded-lg bg-[#EF4444]/10 border border-[#EF4444]/20 p-2.5">
+                              <div className="text-[8px] sm:text-[9px] text-[#F87171] uppercase tracking-wider">At-Risk People</div>
+                              <div className="mt-0.5 font-mono text-sm sm:text-base font-bold text-[#F87171]">{atRiskPopulation.toLocaleString()}</div>
+                            </div>
+                            <div className="rounded-lg bg-[#10B981]/10 border border-[#10B981]/20 p-2.5">
+                              <div className="text-[8px] sm:text-[9px] text-[#34D399] uppercase tracking-wider">Could Save</div>
+                              <div className="mt-0.5 font-mono text-sm sm:text-base font-bold text-[#34D399]">{newCoverage.toLocaleString()}</div>
+                            </div>
+                            <div className="rounded-lg bg-white/[0.03] border border-white/[0.06] p-2.5">
+                              <div className="text-[8px] sm:text-[9px] text-white/30 uppercase tracking-wider">Nearest Center</div>
+                              <div className="mt-0.5 font-mono text-sm sm:text-base font-bold text-white/70">{nearest.distanceMi === 0 ? "On Site" : `${nearest.distanceMi} mi`}</div>
+                            </div>
+                          </div>
+                          <div className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-3">
+                            <div className="flex items-start gap-2">
+                              <div className="mt-0.5 h-4 w-4 shrink-0 rounded-full bg-[#10B981]/20 flex items-center justify-center">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                              </div>
+                              <div>
+                                <p className="text-xs sm:text-sm text-white/60 font-medium">Recommendation</p>
+                                <p className="text-[11px] sm:text-xs text-white/40 mt-0.5">
+                                  Deploy mobile cooling unit {farthest.distanceMi > 0 ? `${(farthest.distanceMi * 0.6).toFixed(1)} mi ${farthest.lat > selectedCity.latitude ? "north" : "south"} of ${nearest.name}` : `to high-risk zone`} to cover {uncoveredBlocks} uncovered blocks and protect {atRiskPopulation.toLocaleString()} at-risk residents.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {centers.map((c) => (
+                              <div key={c.name} className="flex items-center gap-1.5 rounded-full bg-[#2563EB]/10 border border-[#2563EB]/20 px-2.5 py-1">
+                                <div className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" />
+                                <span className="text-[9px] sm:text-[10px] text-[#60A5FA]">{c.name}</span>
+                                <span className="text-[8px] text-[#60A5FA]/50">({c.capacity})</span>
+                              </div>
+                            ))}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               )}
