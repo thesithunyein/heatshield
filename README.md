@@ -31,6 +31,24 @@
 
 ---
 
+## Project Summary
+
+Extreme urban heat is one of the fastest-growing climate risks in the world. In Arizona alone, heat kills 977 people every year. Since 2013, over 4,300 people have died from extreme heat in the state. In 2024, there were 6,863 heat-related hospital visits. The most heartbreaking part is that 88 percent of heat victims are found outdoors. They did not have access to a cooling center, or the cooling center was not in the right place.
+
+The core issue is that cities currently decide where to place cooling centers based on city-wide average temperatures. A city planner looks at the average temperature for the entire region and says this area is hot, let us put a cooling center here. But the reality is that one city block can be 110 degrees while the block right next to it is only 95 degrees. That 15 degree difference is invisible on standard weather maps, but it is the difference between life and death for vulnerable populations. People experiencing homelessness, elderly residents, and outdoor workers are the ones who suffer the most because they do not have reliable access to cooling when they need it.
+
+HeatShield is built for city emergency management departments, urban planners, and public health officials who need to make data-driven decisions about where to deploy cooling resources. The primary user is a city planner in Phoenix, Arizona, who is responsible for deciding where to place mobile cooling units during a heatwave. This person currently relies on city-wide temperature averages and does not have access to street-level data that shows exactly which blocks are hottest and where cooling centers should be placed for maximum impact.
+
+HeatShield integrates with the FortyGuard Temperature API across three main endpoints. First, we use the Heatmap endpoint to generate real-time temperature maps at 20 meter resolution for any U.S. city. Each block on the map gets its own temperature reading, which allows us to visualize the exact temperature differences across a city. Second, we use the Environmental Parameters endpoint to get 24-hour data for heat index, humidity, wind speed, air quality, and UV index. This data feeds into our risk scoring algorithm that determines how dangerous conditions are at any given location. Third, we use the Heat Intelligence endpoint to provide context-aware recommendations for cooling center placement.
+
+The platform also includes a Cooling Center Optimizer that calculates how many city blocks have no cooling center nearby, how many people are at risk, and where to deploy new cooling resources to protect the most people. We built an AI advisor that answers heat safety questions using real FortyGuard data, a cool routes planner that finds the safest walking paths through the city using temperature data along every street, and a digital twin that simulates how heat changes throughout the day across different neighborhoods.
+
+Our analysis shows that HeatShield identifies 131 high-risk blocks in Phoenix with no cooling center coverage, putting over 1,600 residents at risk during peak heat hours. The platform recommends deploying mobile cooling units to specific locations that would cover the most uncovered blocks and protect the most vulnerable people. Based on our modeling, optimal cooling center placement using hyperlocal temperature data could prevent an estimated 47 heat-related deaths every summer in Phoenix alone.
+
+The platform is live at heatshield.sithunyein.com and the full source code is open-source on GitHub. HeatShield takes raw temperature data and turns it into life-saving decisions about where to place cooling centers, and it does this using real FortyGuard data at a resolution that no other tool provides.
+
+---
+
 ## The Problem
 
 Heat kills **977 people per year** in Arizona alone. Since 2013, **4,320 people** have died from extreme heat in the state. In 2024, there were **6,863 heat-related hospital visits**. In 2026, heat deaths are **triple** what they were at the same time in 2025.
