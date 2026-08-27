@@ -355,17 +355,19 @@ export default function DashboardPage() {
                   {loadingHourly && <span className="text-[9px] text-white/20">Loading...</span>}
                 </div>
                 {hourlyData.length > 0 ? (
-                  <div className="flex items-end gap-1.5 sm:gap-2 h-32 sm:h-40">
-                    {hourlyData.map((d) => {
-                      const height = (d.temp / maxHourlyTemp) * 100;
-                      return (
-                        <div key={d.hour} className="flex-1 flex flex-col items-center gap-1">
-                          <span className="text-[8px] sm:text-[9px] font-mono text-white/30">{d.temp}°</span>
-                          <div className="w-full rounded-t-md shadow-lg" style={{ height: `${height}%`, background: `linear-gradient(to top, ${getBarColor(d.temp)}88, ${getBarColor(d.temp)})`, minHeight: '4px' }} />
-                          <span className="text-[8px] font-mono text-white/20">{d.hour}h</span>
-                        </div>
-                      );
-                    })}
+                  <div className="relative h-32 sm:h-40">
+                    <div className="absolute inset-0 flex items-end gap-1.5 sm:gap-2">
+                      {hourlyData.map((d) => {
+                        const barHeight = Math.max(8, (d.temp / maxHourlyTemp) * 100);
+                        return (
+                          <div key={d.hour} className="flex-1 flex flex-col items-center justify-end h-full">
+                            <span className="text-[8px] sm:text-[9px] font-mono text-white/30 mb-1">{d.temp}°</span>
+                            <div className="w-full rounded-t-md" style={{ height: `${barHeight}%`, minHeight: '6px', background: `linear-gradient(to top, ${getBarColor(d.temp)}88, ${getBarColor(d.temp)})`, boxShadow: `0 0 8px ${getBarColor(d.temp)}44` }} />
+                            <span className="text-[8px] font-mono text-white/20 mt-1">{d.hour}h</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : (
                   <div className="h-32 flex items-center justify-center text-[11px] text-white/20">No hourly data</div>
