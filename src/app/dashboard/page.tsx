@@ -356,7 +356,7 @@ export default function DashboardPage() {
                 </div>
                 {hourlyData.length > 0 ? (
                   <div className="relative h-40 sm:h-52">
-                    <svg viewBox="0 0 400 160" className="w-full h-full" preserveAspectRatio="none">
+                    <svg viewBox="-10 0 420 170" className="w-full h-full" preserveAspectRatio="none">
                       <defs>
                         <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.3" />
