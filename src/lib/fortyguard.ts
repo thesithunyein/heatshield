@@ -12,7 +12,7 @@
 
 const API_BASE = "https://api.fortyguard.com";
 const API_KEY = process.env.FORTYGUARD_API_KEY ?? "";
-const MAX_POLL_ATTEMPTS = 20;
+const MAX_POLL_ATTEMPTS = 60;
 const POLL_INTERVAL_MS = 2000;
 
 // In-memory cache for completed results (keyed by activity_id)

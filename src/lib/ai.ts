@@ -22,6 +22,7 @@ export async function getAdvisorResponse(
     temperature?: number;
     riskLevel?: string;
     humidity?: number;
+    grounded?: boolean;
   }
 ): Promise<string> {
   if (!FEATHERLESS_API_KEY) {
@@ -29,9 +30,11 @@ export async function getAdvisorResponse(
   }
 
   try {
-    const contextMsg = context
-      ? `\n\nCurrent context — City: ${context.city ?? "Unknown"}, Temp: ${context.temperature ?? "N/A"}°F, Risk: ${context.riskLevel ?? "N/A"}, Humidity: ${context.humidity ?? "N/A"}%`
-      : "";
+    const contextMsg = context?.grounded
+      ? `\n\nLive FortyGuard readings for ${context.city ?? "the city"} right now — temperature: ${context.temperature ?? "N/A"}°F, risk level: ${context.riskLevel ?? "N/A"}, humidity: ${context.humidity ?? "N/A"}%. Use ONLY these measured values when discussing current conditions; never assume or invent other numbers.`
+      : context
+        ? `\n\nCurrent context — City: ${context.city ?? "Unknown"}, Temp: ${context.temperature ?? "N/A"}°F, Risk: ${context.riskLevel ?? "N/A"}, Humidity: ${context.humidity ?? "N/A"}%`
+        : "";
 
     const res = await fetch(`${FEATHERLESS_BASE}/chat/completions`, {
       method: "POST",

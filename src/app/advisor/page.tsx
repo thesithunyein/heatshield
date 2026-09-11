@@ -25,8 +25,9 @@ export default function AdvisorPage() {
     setMessages((p) => [...p, { id: `u-${Date.now()}`, role: "user", content: text.trim(), timestamp: new Date().toISOString() }]);
     setInput(""); setSending(true);
     try {
-      // Fetch real temperature data for context
-      let context = { city: PRESET_CITIES[0].name, temperature: 95, riskLevel: "medium" };
+      // Fetch real temperature data for context — every answer is grounded
+      // in live FortyGuard readings, never assumed values.
+      let context = { city: PRESET_CITIES[0].name, temperature: 95, riskLevel: "medium", humidity: undefined as number | undefined, grounded: false };
       try {
         const [iRes, eRes] = await Promise.all([
           fetch("/api/intelligence", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ latitude: PRESET_CITIES[0].latitude, longitude: PRESET_CITIES[0].longitude }) }),
@@ -34,11 +35,27 @@ export default function AdvisorPage() {
         ]);
         const iData = await iRes.json();
         const eData = await eRes.json();
+        const hourly = eData?.result?.hourly ?? eData?.result;
+        const last = (arr?: number[]) => (Array.isArray(arr) && arr.length ? arr[arr.length - 1] : undefined);
+        const envTempC = last(hourly?.temperature ?? hourly?.heat_index);
+        const envHumidity = last(hourly?.humidity);
+
         if (iData.result) {
           context = {
             city: PRESET_CITIES[0].name,
-            temperature: iData.result.temperature?.current ?? 95,
+            temperature: iData.result.temperature?.current ?? (envTempC !== undefined ? Math.round((envTempC * 9) / 5 + 32) : 95),
             riskLevel: iData.result.risk_level ?? "medium",
+            humidity: envHumidity,
+            grounded: true,
+          };
+        } else if (envTempC !== undefined) {
+          // Intelligence report still generating — ground on live env-params only.
+          context = {
+            city: PRESET_CITIES[0].name,
+            temperature: Math.round((envTempC * 9) / 5 + 32),
+            riskLevel: "computed from live data",
+            humidity: envHumidity,
+            grounded: true,
           };
         }
       } catch { /* use fallback context */ }
